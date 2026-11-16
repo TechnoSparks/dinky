@@ -82,7 +82,7 @@ func loadEditorColorScheme(colorSchemeName string) {
 	}
 
 	defaultStyle := colorscheme.GetColor("default")
-	_, bg, _ := defaultStyle.Decompose()
+	fg, bg, _ := defaultStyle.Decompose()
 
 	for _, fileBuffer := range fileBuffers {
 		fileBuffer.editor.SetColorscheme(colorscheme)
@@ -91,6 +91,10 @@ func loadEditorColorScheme(colorSchemeName string) {
 		fileBuffer.hScrollbar.Track.SetBackgroundColor(bg)
 	}
 
+	// Keep tab text readable on both light and dark themes by following the
+	// colorscheme's default foreground instead of a fixed white.
+	tabBarLine.ActiveTabStyle = tabBarLine.ActiveTabStyle.Foreground(fg)
+	tabBarLine.InactiveTabStyle = tabBarLine.InactiveTabStyle.Foreground(fg)
 	tabBarLine.SetTabBackgroundColor(bg)
 }
 
