@@ -12,6 +12,8 @@ require (
 	github.com/sedwards2009/smidgen v0.0.0-20260512194805-3853ae73a7f9
 )
 
+replace github.com/sedwards2009/smidgen => ../smidgen
+
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
