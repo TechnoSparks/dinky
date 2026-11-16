@@ -91,10 +91,10 @@ func loadEditorColorScheme(colorSchemeName string) {
 		fileBuffer.hScrollbar.Track.SetBackgroundColor(bg)
 	}
 
-	// Keep tab text readable on both light and dark themes by following the
-	// colorscheme's default foreground instead of a fixed white.
+	// Active tab sits on the editor background, so its text must follow the
+	// colorscheme's default foreground (important for light themes). Inactive
+	// tabs keep a light foreground on the grey background for contrast.
 	tabBarLine.ActiveTabStyle = tabBarLine.ActiveTabStyle.Foreground(fg)
-	tabBarLine.InactiveTabStyle = tabBarLine.InactiveTabStyle.Foreground(fg)
 	tabBarLine.SetTabBackgroundColor(bg)
 }
 
