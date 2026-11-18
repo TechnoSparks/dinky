@@ -696,3 +696,82 @@ func TestWriteFileFailure(t *testing.T) {
 		t.Errorf("message = %q, want an error message", message)
 	}
 }
+
+func TestFindNextPreviousNavigation(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foo bar foo baz foo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("foo")
+
+	fb.findbar.SearchDown()
+	cursor := fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 0, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 3, Y: 0}) {
+		t.Fatalf("first Find Next selection = %v-%v, want 0,0-3,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+
+	fb.findbar.SearchDown()
+	cursor = fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 8, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 11, Y: 0}) {
+		t.Fatalf("second Find Next selection = %v-%v, want 8,0-11,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+
+	fb.findbar.SearchUp()
+	cursor = fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 0, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 3, Y: 0}) {
+		t.Fatalf("Find Previous selection = %v-%v, want 0,0-3,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+}
+
+func TestFindPreviousWrapsToLastMatch(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foo bar foo baz foo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("foo")
+
+	fb.findbar.SearchDown() // first match
+	fb.findbar.SearchUp()   // should wrap to last match
+
+	cursor := fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 16, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 19, Y: 0}) {
+		t.Fatalf("wrapped Find Previous selection = %v-%v, want 16,0-19,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+}
+
+func TestFindNextWrapsToFirstMatch(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foo bar foo baz foo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("foo")
+
+	// Move to last match.
+	fb.findbar.SearchDown()
+	fb.findbar.SearchDown()
+	fb.findbar.SearchDown()
+
+	fb.findbar.SearchDown() // wrap to first match
+
+	cursor := fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 0, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 3, Y: 0}) {
+		t.Fatalf("wrapped Find Next selection = %v-%v, want 0,0-3,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+}
+
+func TestFindNoMatches(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foo bar foo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("zzz")
+
+	// Record cursor before search.
+	before := fb.editor.Cursor().Loc
+
+	fb.findbar.SearchDown()
+
+	if fb.editor.Cursor().Loc != before {
+		t.Fatalf("cursor moved on no match: got %v, want %v", fb.editor.Cursor().Loc, before)
+	}
+}
