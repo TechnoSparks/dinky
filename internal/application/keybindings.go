@@ -61,8 +61,8 @@ func initKeyBindings() {
 		// "Alt-]":          "DiffNext|CursorEnd,
 		"Ctrl-z": smidgen.ActionUndo,
 		"Ctrl-y": smidgen.ActionRedo,
-		"Ctrl-c": smidgen.ActionCopy,
-		"Ctrl-x": smidgen.ActionCut,
+		"Ctrl-c": smidgen.ActionCopy + "|" + smidgen.ActionCopyLine,
+		"Ctrl-x": smidgen.ActionCut + "|" + smidgen.ActionCutLine,
 		"Ctrl-k": smidgen.ActionCutLine,
 		// "Ctrl-d": smidgen.ActionDuplicateLine,
 		"Ctrl-v":   smidgen.ActionPaste,
@@ -158,6 +158,11 @@ func initKeyBindings() {
 
 	smidgenDefaultKeyBindings = smidgen.ParseKeybindings(smidgenKeyToActionMapping)
 	smidgenSingleLineKeyBindings = smidgen.ParseKeybindings(smidgenSingleLineKeyToActionMapping)
+
+	// Preserve shortcut lookup for the base Cut/Copy actions even though their
+	// keybindings fall back to the linewise variants.
+	actionToKeyMapping[smidgen.ActionCut] = "Ctrl-x"
+	actionToKeyMapping[smidgen.ActionCopy] = "Ctrl-c"
 
 	for key, action := range dinkyKeyToActionMapping {
 		if action == "" {
