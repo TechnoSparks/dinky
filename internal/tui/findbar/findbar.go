@@ -219,7 +219,13 @@ func (f *Findbar) search(directionDown bool) bool {
 
 	f.updateSearchTextHistory(searchText)
 
-	found, err := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
+	var found bool
+	var err error
+	if directionDown {
+		found, err = f.editor.ActionController().Search(searchText, regex, caseSensitive, true)
+	} else {
+		found, err = f.editor.ActionController().SearchPrevious(searchText, regex, caseSensitive)
+	}
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -243,7 +249,13 @@ func (f *Findbar) search(directionDown bool) bool {
 		f.editor.Cursor().SetSelectionStart(wrapLoc)
 		f.editor.Cursor().SetSelectionEnd(wrapLoc)
 
-		found, _ := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
+		var wrappedFound bool
+		if directionDown {
+			wrappedFound, _ = f.editor.ActionController().Search(searchText, regex, caseSensitive, true)
+		} else {
+			wrappedFound, _ = f.editor.ActionController().SearchPrevious(searchText, regex, caseSensitive)
+		}
+		found = wrappedFound
 		if !found {
 			// Restore previous cursor position if not found
 			f.editor.Cursor().GotoLoc(prevLoc)
