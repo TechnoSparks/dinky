@@ -124,7 +124,7 @@ func main() {
 	firstColumnFlex.AddItem(showMatchBracketCheckbox, 1, 0, false)
 
 	ensureFinalNewlineCheckbox := tview.NewCheckbox()
-	ensureFinalNewlineCheckbox.SetLabel("Ensure Final Newline:  ")
+	ensureFinalNewlineCheckbox.SetLabel("Ensure Final Newline:     ")
 	firstColumnFlex.AddItem(ensureFinalNewlineCheckbox, 1, 0, false)
 
 	// Second column of checkboxes
@@ -196,7 +196,7 @@ func main() {
 	optionsColumnFlex.AddItem(forthColumnFlex, 12, 0, false)
 	optionsColumnFlex.AddItem(fifthColumnFlex, 0, 1, false)
 
-	verticalContentsFlex.AddItem(optionsColumnFlex, 5, 0, false)
+	verticalContentsFlex.AddItem(optionsColumnFlex, 6, 0, false)
 
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
