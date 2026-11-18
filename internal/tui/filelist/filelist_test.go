@@ -16,6 +16,9 @@ import (
 // sorting tests are deterministic.
 func buildTestTree(t *testing.T) (string, []os.DirEntry) {
 	t.Helper()
+	// Fix the process timezone so ModTime formatting is deterministic across
+	// machines and CI runners (the test data was authored in UTC+8).
+	time.Local = time.FixedZone("CST", 8*60*60)
 	dir := t.TempDir()
 	base := time.Date(2021, 5, 6, 7, 8, 9, 0, time.UTC)
 
@@ -277,8 +280,8 @@ func TestFileListSortEntries(t *testing.T) {
 	}{
 		{"name ascending", 0, 1, []string{"adir", "Alpha.go", "beta.md", "script.sh", "zeta.txt"}},
 		{"name descending", 0, -1, []string{"zeta.txt", "script.sh", "beta.md", "Alpha.go", "adir"}},
-		{"size ascending", 1, 1, []string{"zeta.txt", "adir", "script.sh", "beta.md", "Alpha.go"}},
-		{"size descending", 1, -1, []string{"Alpha.go", "beta.md", "script.sh", "adir", "zeta.txt"}},
+		{"size ascending", 1, 1, []string{"adir", "zeta.txt", "script.sh", "beta.md", "Alpha.go"}},
+		{"size descending", 1, -1, []string{"Alpha.go", "beta.md", "script.sh", "zeta.txt", "adir"}},
 		{"modified ascending", 2, 1, []string{"zeta.txt", "Alpha.go", "adir", "script.sh", "beta.md"}},
 		{"modified descending", 2, -1, []string{"beta.md", "script.sh", "adir", "Alpha.go", "zeta.txt"}},
 		{"permissions ascending", 3, 1, []string{"Alpha.go", "beta.md", "zeta.txt", "script.sh", "adir"}},

@@ -79,14 +79,21 @@ func sortNameFunc(a os.DirEntry, b os.DirEntry) int {
 }
 
 func sortSizeFunc(a os.DirEntry, b os.DirEntry) int {
+	// Directory "size" is filesystem-dependent (and not meaningful), so
+	// treat directories as size 0 for sorting to keep ordering deterministic
+	// across platforms.
 	var aSize int64 = 0
-	if aInfo, err := a.Info(); err == nil {
-		aSize = aInfo.Size()
+	if !a.IsDir() {
+		if aInfo, err := a.Info(); err == nil {
+			aSize = aInfo.Size()
+		}
 	}
 
 	var bSize int64 = 0
-	if bInfo, err := b.Info(); err == nil {
-		bSize = bInfo.Size()
+	if !b.IsDir() {
+		if bInfo, err := b.Info(); err == nil {
+			bSize = bInfo.Size()
+		}
 	}
 
 	if aSize < bSize {
