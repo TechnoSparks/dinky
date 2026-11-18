@@ -214,18 +214,29 @@ func writeFile(filename string, buf *buffer.Buffer) (ok bool, message string) {
 		buf.LineArray.Endings = buffer.FFUnix
 	}
 
+	needFinalNewline := settings.EnsureFinalNewline && buf.LinesNum() > 0 &&
+		len(buf.LineBytes(buf.LinesNum()-1)) > 0
+
 	contents := bufferToBytes(buf)
-	if settings.EnsureFinalNewline && len(contents) > 0 && contents[len(contents)-1] != '\n' {
+	if needFinalNewline {
 		if buf.LineArray.Endings == buffer.FFDos {
 			contents = append(contents, '\r', '\n')
 		} else {
 			contents = append(contents, '\n')
 		}
 	}
+
 	err := renameio.WriteFile(filename, contents, 0644)
 	if err != nil {
 		return false, "Error writing file: " + err.Error()
 	}
+
+	// Add the final newline to the buffer itself so the editor reflects it
+	// immediately after saving, rather than only after reopening the file.
+	if needFinalNewline {
+		buf.Insert(buf.End(), "\n")
+	}
+
 	return true, "Wrote file " + filename
 }
 

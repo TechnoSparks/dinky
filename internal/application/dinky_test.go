@@ -563,27 +563,30 @@ func TestWriteFileEnsureFinalNewline(t *testing.T) {
 	fb := h.open("hello\nworld", "")
 	path := filepath.Join(t.TempDir(), "out.txt")
 
-	// Default: ensure a final newline is added.
-	settings.EnsureFinalNewline = true
+	// Disabled: write exactly what the buffer contains.
+	settings.EnsureFinalNewline = false
 	ok, message := writeFile(path, fb.buffer)
 	if !ok {
 		t.Fatalf("writeFile failed: %s", message)
 	}
 	data, _ := os.ReadFile(path)
-	if string(data) != "hello\nworld\n" {
-		t.Errorf("with ensure on: got %q, want %q", data, "hello\\nworld\\n")
+	if string(data) != "hello\nworld" {
+		t.Errorf("with ensure off: got %q, want %q", data, "hello\\nworld")
 	}
 
-	// Disabled: write exactly what the buffer contains.
-	settings.EnsureFinalNewline = false
+	// Enabled: a final newline is added to both the file and the buffer.
+	settings.EnsureFinalNewline = true
 	path2 := filepath.Join(t.TempDir(), "out2.txt")
 	ok, message = writeFile(path2, fb.buffer)
 	if !ok {
 		t.Fatalf("writeFile failed: %s", message)
 	}
 	data, _ = os.ReadFile(path2)
-	if string(data) != "hello\nworld" {
-		t.Errorf("with ensure off: got %q, want %q", data, "hello\\nworld")
+	if string(data) != "hello\nworld\n" {
+		t.Errorf("with ensure on: got %q, want %q", data, "hello\\nworld\\n")
+	}
+	if got := h.text(); got != "hello\nworld\n" {
+		t.Errorf("buffer after save = %q, want trailing newline", got)
 	}
 }
 
