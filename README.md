@@ -66,6 +66,22 @@ cd dinky
 go build dinky.go
 ```
 
+Cross-compile for other platforms (static binaries):
+
+```bash
+# Linux amd64
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dinky-linux-amd64 .
+
+# Linux arm32 (ARMv7)
+GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build -o dinky-linux-arm .
+
+# Linux arm64
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o dinky-linux-arm64 .
+
+# macOS arm64 (Apple Silicon)
+GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dinky-darwin-arm64 .
+```
+
 ## Usage
 
 ```bash

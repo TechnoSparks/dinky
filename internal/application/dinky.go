@@ -82,7 +82,7 @@ func loadEditorColorScheme(colorSchemeName string) {
 	}
 
 	defaultStyle := colorscheme.GetColor("default")
-	_, bg, _ := defaultStyle.Decompose()
+	fg, bg, _ := defaultStyle.Decompose()
 
 	for _, fileBuffer := range fileBuffers {
 		fileBuffer.editor.SetColorscheme(colorscheme)
@@ -91,6 +91,10 @@ func loadEditorColorScheme(colorSchemeName string) {
 		fileBuffer.hScrollbar.Track.SetBackgroundColor(bg)
 	}
 
+	// Active tab sits on the editor background, so its text must follow the
+	// colorscheme's default foreground (important for light themes). Inactive
+	// tabs keep a light foreground on the grey background for contrast.
+	tabBarLine.ActiveTabStyle = tabBarLine.ActiveTabStyle.Foreground(fg)
 	tabBarLine.SetTabBackgroundColor(bg)
 }
 
