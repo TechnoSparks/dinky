@@ -207,7 +207,21 @@ func bufferToBytes(buffer *buffer.Buffer) []byte {
 }
 
 func writeFile(filename string, buffer *buffer.Buffer) (ok bool, message string) {
+	// Keep the on-disk line endings consistent with Dinky's EOL setting.
+	if isBufferCRLF(buffer) {
+		buffer.LineArray.Endings = buffer.FFDos
+	} else {
+		buffer.LineArray.Endings = buffer.FFUnix
+	}
+
 	contents := bufferToBytes(buffer)
+	if settings.EnsureFinalNewline && len(contents) > 0 && contents[len(contents)-1] != '\n' {
+		if buffer.LineArray.Endings == buffer.FFDos {
+			contents = append(contents, '\r', '\n')
+		} else {
+			contents = append(contents, '\n')
+		}
+	}
 	err := renameio.WriteFile(filename, contents, 0644)
 	if err != nil {
 		return false, "Error writing file: " + err.Error()
@@ -444,10 +458,10 @@ func handleSetLineEndings() tview.Primitive {
 			if index < len(buttons)-1 { // Not cancel
 				switch index {
 				case 0:
-					buffer.Settings["fileformat"] = "unix"
+					buffer.SetOptionNative("fileformat", "unix")
 					statusBar.ShowMessage("Line endings set to LF (Unix)")
 				case 1:
-					buffer.Settings["fileformat"] = "dos"
+					buffer.SetOptionNative("fileformat", "dos")
 					statusBar.ShowMessage("Line endings set to CRLF (DOS)")
 				}
 				syncMenuFromBuffer(buffer)
