@@ -272,9 +272,9 @@ func (f *Findbar) search(directionDown bool) bool {
 
 		var wrappedFound bool
 		if directionDown {
-			wrappedFound, _ = f.editor.ActionController().Search(searchText, regex, caseSensitive, true)
+			wrappedFound, _ = f.editor.ActionController().Search(effectivePattern, effectiveRegex, caseSensitive, true)
 		} else {
-			wrappedFound, _ = f.editor.ActionController().SearchPrevious(searchText, regex, caseSensitive)
+			wrappedFound, _ = f.editor.ActionController().SearchPrevious(effectivePattern, effectiveRegex, caseSensitive)
 		}
 		found = wrappedFound
 		if !found {
