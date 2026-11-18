@@ -202,6 +202,17 @@ func TestActionToKeyMappingIncludesDinkyShortcuts(t *testing.T) {
 	}
 }
 
+func TestCtrlCutCopyFallBackToLineVariants(t *testing.T) {
+	initKeyBindings()
+
+	if got := smidgenKeyToActionMapping["Ctrl-c"]; got != smidgen.ActionCopy+"|"+smidgen.ActionCopyLine {
+		t.Errorf("Ctrl-c mapping = %q, want %q", got, smidgen.ActionCopy+"|"+smidgen.ActionCopyLine)
+	}
+	if got := smidgenKeyToActionMapping["Ctrl-x"]; got != smidgen.ActionCut+"|"+smidgen.ActionCutLine {
+		t.Errorf("Ctrl-x mapping = %q, want %q", got, smidgen.ActionCut+"|"+smidgen.ActionCutLine)
+	}
+}
+
 func TestSmidgenKeybindingsAreBuilt(t *testing.T) {
 	initKeyBindings()
 

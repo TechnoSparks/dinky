@@ -549,8 +549,62 @@ func TestWriteFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(data) != h.text() {
-		t.Errorf("written contents = %q, want %q", data, h.text())
+	want := h.text()
+	if settings.EnsureFinalNewline && len(want) > 0 && want[len(want)-1] != '\n' {
+		want += "\n"
+	}
+	if string(data) != want {
+		t.Errorf("written contents = %q, want %q", data, want)
+	}
+}
+
+func TestWriteFileEnsureFinalNewline(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello\nworld", "")
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	// Disabled: write exactly what the buffer contains.
+	settings.EnsureFinalNewline = false
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\nworld" {
+		t.Errorf("with ensure off: got %q, want %q", data, "hello\\nworld")
+	}
+
+	// Enabled: a final newline is added to both the file and the buffer.
+	settings.EnsureFinalNewline = true
+	path2 := filepath.Join(t.TempDir(), "out2.txt")
+	ok, message = writeFile(path2, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ = os.ReadFile(path2)
+	if string(data) != "hello\nworld\n" {
+		t.Errorf("with ensure on: got %q, want %q", data, "hello\\nworld\\n")
+	}
+	if got := h.text(); got != "hello\nworld\n" {
+		t.Errorf("buffer after save = %q, want trailing newline", got)
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineCRLF(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello\nworld", "")
+	fb.buffer.Settings["fileformat"] = "dos"
+	fb.buffer.LineArray.Endings = buffer.FFDos
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	settings.EnsureFinalNewline = true
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\r\nworld\r\n" {
+		t.Errorf("got %q, want %q", data, "hello\\r\\nworld\\r\\n")
 	}
 }
 

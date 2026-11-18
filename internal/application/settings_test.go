@@ -69,6 +69,12 @@ func TestCleanColorSchemeName(t *testing.T) {
 	}
 }
 
+func TestDefaultSettingsEnsureFinalNewline(t *testing.T) {
+	if !settingstype.DefaultSettings().EnsureFinalNewline {
+		t.Error("DefaultSettings().EnsureFinalNewline should be true")
+	}
+}
+
 func TestLoadSettingsMissingFileReturnsDefaults(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "does-not-exist.json")
 	got := loadSettings(path)
@@ -156,6 +162,7 @@ func TestSaveAndLoadSettingsRoundTrip(t *testing.T) {
 		ColorScheme:            "default",
 		ShowTrailingWhitespace: false,
 		VerticalRuler:          12.5,
+		EnsureFinalNewline:     true,
 	}
 
 	if err := SaveSettings(want); err != nil {
