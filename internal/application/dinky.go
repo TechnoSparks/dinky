@@ -109,9 +109,6 @@ func newFile(contents string, filename string) {
 	buffer.Settings["ruler"] = settings.ShowLineNumbers
 	buffer.Settings["showwhitespace"] = settings.ShowWhitespace
 	buffer.Settings["softwrap"] = settings.SoftWrap
-	if settings.SoftWrap {
-		editor.ActionController().GetView().StartCol = 0
-	}
 	buffer.Settings["tabsize"] = float64(settings.TabSize)
 	buffer.Settings["tabstospaces"] = settings.TabCharacter == "space"
 	buffer.Settings["hltrailingws"] = settings.ShowTrailingWhitespace
