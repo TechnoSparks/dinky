@@ -346,6 +346,23 @@ func handleMatchBracket() tview.Primitive {
 }
 
 func handleSmidgenAction(id string) tview.Primitive {
+	// Cut/Copy falling back to their linewise variants when there is
+	// no active selection, mirroring the keyboard behaviour.
+	if id == smidgen.ActionCut {
+		ac := currentFileBuffer.editor.ActionController()
+		if !ac.Cut() {
+			ac.CutLine()
+		}
+		return nil
+	}
+	if id == smidgen.ActionCopy {
+		ac := currentFileBuffer.editor.ActionController()
+		if !ac.Copy() {
+			ac.CopyLine()
+		}
+		return nil
+	}
+
 	action := currentFileBuffer.editor.MapActionNameToAction(id)
 	if action != nil {
 		action()
