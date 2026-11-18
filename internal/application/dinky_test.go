@@ -775,3 +775,48 @@ func TestFindNoMatches(t *testing.T) {
 		t.Fatalf("cursor moved on no match: got %v, want %v", fb.editor.Cursor().Loc, before)
 	}
 }
+
+func TestFindWholeWord(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foobar foo barfoo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("foo")
+	fb.findbar.WholeWordCheckbox.SetChecked(true)
+
+	fb.findbar.SearchDown()
+	cursor := fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 7, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 10, Y: 0}) {
+		t.Fatalf("whole-word Find Next selection = %v-%v, want 7,0-10,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+}
+
+func TestFindWholeWordExcludesEmbeddedWithoutOption(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foobar foo barfoo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("foo")
+
+	fb.findbar.SearchDown()
+	cursor := fb.editor.Cursor()
+	if cursor.CurSelection[0] != (buffer.Loc{X: 0, Y: 0}) || cursor.CurSelection[1] != (buffer.Loc{X: 3, Y: 0}) {
+		t.Fatalf("default Find Next selection = %v-%v, want 0,0-3,0", cursor.CurSelection[0], cursor.CurSelection[1])
+	}
+}
+
+func TestReplaceAllWholeWord(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("foobar foo barfoo", "")
+
+	fb.openFindbar()
+	fb.findbar.SetSearchText("foo")
+	fb.findbar.WholeWordCheckbox.SetChecked(true)
+	fb.findbar.ReplaceStringField.SetText("X")
+
+	fb.findbar.ReplaceAll()
+
+	if got := h.text(); got != "foobar X barfoo" {
+		t.Fatalf("buffer after Replace All = %q, want %q", got, "foobar X barfoo")
+	}
+}
