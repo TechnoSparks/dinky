@@ -206,17 +206,17 @@ func bufferToBytes(buffer *buffer.Buffer) []byte {
 	return buffer.LineArray.Bytes()
 }
 
-func writeFile(filename string, buffer *buffer.Buffer) (ok bool, message string) {
+func writeFile(filename string, buf *buffer.Buffer) (ok bool, message string) {
 	// Keep the on-disk line endings consistent with Dinky's EOL setting.
-	if isBufferCRLF(buffer) {
-		buffer.LineArray.Endings = buffer.FFDos
+	if isBufferCRLF(buf) {
+		buf.LineArray.Endings = buffer.FFDos
 	} else {
-		buffer.LineArray.Endings = buffer.FFUnix
+		buf.LineArray.Endings = buffer.FFUnix
 	}
 
-	contents := bufferToBytes(buffer)
+	contents := bufferToBytes(buf)
 	if settings.EnsureFinalNewline && len(contents) > 0 && contents[len(contents)-1] != '\n' {
-		if buffer.LineArray.Endings == buffer.FFDos {
+		if buf.LineArray.Endings == buffer.FFDos {
 			contents = append(contents, '\r', '\n')
 		} else {
 			contents = append(contents, '\n')

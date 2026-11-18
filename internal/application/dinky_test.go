@@ -591,7 +591,7 @@ func TestWriteFileEnsureFinalNewlineCRLF(t *testing.T) {
 	h := newTestHarness(t)
 	fb := h.open("hello\nworld", "")
 	fb.buffer.Settings["fileformat"] = "dos"
-	fb.buffer.LineArray.Endings = fb.buffer.FFDos
+	fb.buffer.LineArray.Endings = buffer.FFDos
 	path := filepath.Join(t.TempDir(), "out.txt")
 
 	settings.EnsureFinalNewline = true
