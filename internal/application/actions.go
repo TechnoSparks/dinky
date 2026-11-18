@@ -214,7 +214,11 @@ func writeFile(filename string, buf *buffer.Buffer) (ok bool, message string) {
 		buf.LineArray.Endings = buffer.FFUnix
 	}
 
-	needFinalNewline := settings.EnsureFinalNewline && buf.LinesNum() > 0 &&
+	ensureFinalNewline := settings.EnsureFinalNewline
+	if v, ok := buf.Settings["eofnewline"].(bool); ok {
+		ensureFinalNewline = ensureFinalNewline && v
+	}
+	needFinalNewline := ensureFinalNewline && buf.LinesNum() > 0 &&
 		len(buf.LineBytes(buf.LinesNum()-1)) > 0
 
 	contents := bufferToBytes(buf)
