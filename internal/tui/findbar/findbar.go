@@ -93,8 +93,6 @@ func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
 	hFlex.AddItem(regexCheckbox, 10, 0, false)
 	f.RegexCheckbox = regexCheckbox
 
-	hFlex.AddItem(nil, 1, 0, false)
-
 	// Whole Word Checkbox [✓Word ]
 	wholeWordCheckbox := tview.NewCheckbox()
 	wholeWordCheckbox.SetChecked(false)
