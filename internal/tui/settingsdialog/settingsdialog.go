@@ -25,6 +25,7 @@ type SettingsDialog struct {
 	ShowMatchBracketCheckbox       *tview.Checkbox
 	ShowTrailingWhitespaceCheckbox *tview.Checkbox
 	SoftWrapCheckbox               *tview.Checkbox
+	EnsureFinalNewlineCheckbox     *tview.Checkbox
 	TabCharList                    *tview.List
 	TabSizeList                    *tview.List
 	VerticalRulerInputField        *smidgeninputfield.SmidgenInputField
@@ -121,6 +122,10 @@ func main() {
 	showMatchBracketCheckbox := tview.NewCheckbox()
 	showMatchBracketCheckbox.SetLabel("Show Match Bracket:       ")
 	firstColumnFlex.AddItem(showMatchBracketCheckbox, 1, 0, false)
+
+	ensureFinalNewlineCheckbox := tview.NewCheckbox()
+	ensureFinalNewlineCheckbox.SetLabel("Ensure Final Newline:  ")
+	firstColumnFlex.AddItem(ensureFinalNewlineCheckbox, 1, 0, false)
 
 	// Second column of checkboxes
 	secondColumnFlex := tview.NewFlex()
@@ -228,6 +233,7 @@ func main() {
 		ShowMatchBracketCheckbox:       showMatchBracketCheckbox,
 		ShowTrailingWhitespaceCheckbox: showTrailingWhitespaceCheckbox,
 		SoftWrapCheckbox:               softWrapCheckbox,
+		EnsureFinalNewlineCheckbox:     ensureFinalNewlineCheckbox,
 		TabCharList:                    tabCharList,
 		TabSizeList:                    tabSizeList,
 		VerticalRulerInputField:        verticalRulerInputField,
@@ -305,6 +311,7 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 	sd.ShowTrailingWhitespaceCheckbox.SetChecked(settings.ShowTrailingWhitespace)
 	sd.ShowMatchBracketCheckbox.SetChecked(settings.ShowMatchBracket)
 	sd.SoftWrapCheckbox.SetChecked(settings.SoftWrap)
+	sd.EnsureFinalNewlineCheckbox.SetChecked(settings.EnsureFinalNewline)
 	if settings.TabCharacter == "tab" {
 		sd.TabCharList.SetCurrentItem(0)
 	} else {
@@ -334,6 +341,7 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	newSettings.ShowTrailingWhitespace = sd.ShowTrailingWhitespaceCheckbox.IsChecked()
 	newSettings.ShowMatchBracket = sd.ShowMatchBracketCheckbox.IsChecked()
 	newSettings.SoftWrap = sd.SoftWrapCheckbox.IsChecked()
+	newSettings.EnsureFinalNewline = sd.EnsureFinalNewlineCheckbox.IsChecked()
 	tabCharIndex := sd.TabCharList.GetCurrentItem()
 	if tabCharIndex == 0 {
 		newSettings.TabCharacter = "tab"
