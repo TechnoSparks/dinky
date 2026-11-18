@@ -3,6 +3,7 @@ package findbar
 import (
 	"dinky/internal/tui/smidgeninputfield"
 	"fmt"
+	"regexp"
 	"slices"
 
 	"github.com/gdamore/tcell/v2"
@@ -25,6 +26,7 @@ type Findbar struct {
 	ExpanderCheckbox           *tview.Checkbox
 	RegexCheckbox              *tview.Checkbox
 	CaseSensitiveCheckbox      *tview.Checkbox
+	WholeWordCheckbox         *tview.Checkbox
 	OnClose                    func()
 	OnError                    func(err error)
 	OnExpand                   func(expanded bool)
@@ -90,6 +92,14 @@ func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
 	regexCheckbox.SetChecked(false)
 	hFlex.AddItem(regexCheckbox, 10, 0, false)
 	f.RegexCheckbox = regexCheckbox
+
+	hFlex.AddItem(nil, 1, 0, false)
+
+	// Whole Word Checkbox [✓Word ]
+	wholeWordCheckbox := tview.NewCheckbox()
+	wholeWordCheckbox.SetChecked(false)
+	hFlex.AddItem(wholeWordCheckbox, 9, 0, false)
+	f.WholeWordCheckbox = wholeWordCheckbox
 
 	searchUpButton := tview.NewButton("↑") // U+2191 UPWARDS ARROW
 	searchUpButton.SetSelectedFunc(f.SearchUp)
@@ -216,10 +226,21 @@ func (f *Findbar) search(directionDown bool) bool {
 	}
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
+	wholeWord := f.WholeWordCheckbox.IsChecked()
 
 	f.updateSearchTextHistory(searchText)
 
-	found, err := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
+	effectivePattern := searchText
+	effectiveRegex := regex
+	if wholeWord {
+		if !regex {
+			effectivePattern = regexp.QuoteMeta(searchText)
+		}
+		effectivePattern = `\b(?:` + effectivePattern + `)\b`
+		effectiveRegex = true
+	}
+
+	found, err := f.editor.ActionController().Search(effectivePattern, effectiveRegex, caseSensitive, directionDown)
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -316,7 +337,20 @@ func (f *Findbar) ReplaceAll() {
 
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
-	count, err := f.editor.ActionController().ReplaceAll(f.SearchStringField.GetText(), regex, caseSensitive,
+	wholeWord := f.WholeWordCheckbox.IsChecked()
+
+	searchText := f.SearchStringField.GetText()
+	effectivePattern := searchText
+	effectiveRegex := regex
+	if wholeWord {
+		if !regex {
+			effectivePattern = regexp.QuoteMeta(searchText)
+		}
+		effectivePattern = `\b(?:` + effectivePattern + `)\b`
+		effectiveRegex = true
+	}
+
+	count, err := f.editor.ActionController().ReplaceAll(effectivePattern, effectiveRegex, caseSensitive,
 		replaceText)
 	if err != nil {
 		if f.OnError != nil {
