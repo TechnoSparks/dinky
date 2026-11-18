@@ -168,6 +168,10 @@ func StyleFindbar(findBar *findbar.Findbar) {
 	findBar.CaseSensitiveCheckbox.SetCheckedString("[✓Aa ]")
 	findBar.CaseSensitiveCheckbox.SetUncheckedString("[ Aa ]")
 
+	StyleCheckbox(findBar.WholeWordCheckbox)
+	findBar.WholeWordCheckbox.SetCheckedString("[✓Word ]")
+	findBar.WholeWordCheckbox.SetUncheckedString("[ Word ]")
+
 	StyleCheckbox(findBar.ExpanderCheckbox)
 	findBar.ExpanderCheckbox.SetUncheckedStyle(tcell.StyleDefault.Background(stylecolor.ButtonBackgroundColor).Foreground(stylecolor.ButtonLabelColor))
 	findBar.ExpanderCheckbox.SetCheckedStyle(tcell.StyleDefault.Background(stylecolor.ButtonBackgroundColor).Foreground(stylecolor.ButtonLabelColor))
