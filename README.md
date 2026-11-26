@@ -69,6 +69,23 @@ They use the same format as [micro's colour schemes](https://github.com/micro-ed
 
 Download a release binary from the [releases page](https://github.com/sedwards2009/dinky/releases).
 
+Or install with a one-liner (latest release, or a specific PR's build):
+
+```bash
+# Latest release (or newest CI build until a release is published)
+curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh
+
+# Build from a specific pull request
+curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh -s -- 10
+```
+
+The script installs into the current directory by default (like micro). Use `--install-dir` to
+choose another location; it will use `sudo` when the directory is not writable.
+
+Run `sh install.sh --help` for all options, including `--run-id`, `--repo`, `--dry-run`,
+`-y/--yes`, and the `DINKY_PLATFORM` override (e.g. `DINKY_PLATFORM=linux-amd64`) for
+forcing a download on an unsupported/undetected platform.
+
 or build from source:
 
 ```bash
