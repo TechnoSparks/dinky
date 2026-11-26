@@ -17,6 +17,7 @@ type Settings struct {
 	VerticalRuler          float64 `json:"verticalRuler"` // 0.0 means off
 	EnsureFinalNewline     bool    `json:"ensureFinalNewline"`
 	Clipboard              string  `json:"clipboard"` // one of ClipboardModes
+	CopyOnSelect           bool    `json:"copyOnSelect"`
 }
 
 func DefaultSettings() Settings {
@@ -32,5 +33,6 @@ func DefaultSettings() Settings {
 		VerticalRuler:          0.0,
 		EnsureFinalNewline:     true,
 		Clipboard:              clipboard.ModeTerminal,
+		CopyOnSelect:           false,
 	}
 }

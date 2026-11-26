@@ -198,3 +198,28 @@ func TestSettingsDialogClipboardSettingRoundTrip(t *testing.T) {
 		}
 	}
 }
+
+func TestSettingsDialogCopyOnSelectRoundTrip(t *testing.T) {
+	copyOnSelectValues := []bool{true, false}
+	for _, copyOnSelect := range copyOnSelectValues {
+		sd, screen := newTestDialog(t)
+		settings := settingstype.DefaultSettings()
+		settings.CopyOnSelect = copyOnSelect
+		sd.SetSettings(settings)
+
+		clickText(t, sd, screen, "Clipboard")
+		if !screenContains(screen, "Copy on Select:") {
+			t.Error("Clipboard tab is missing the Copy on Select option")
+		}
+
+		var got settingstype.Settings
+		sd.SetOkFunc(func(newSettings settingstype.Settings) {
+			got = newSettings
+		})
+		sd.OkButton.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone), func(p tview.Primitive) {})
+
+		if got.CopyOnSelect != copyOnSelect {
+			t.Errorf("OK returned CopyOnSelect = %v, want %v", got.CopyOnSelect, copyOnSelect)
+		}
+	}
+}

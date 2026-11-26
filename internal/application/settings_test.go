@@ -98,6 +98,12 @@ func TestDefaultSettingsEnsureFinalNewline(t *testing.T) {
 	}
 }
 
+func TestDefaultSettingsCopyOnSelectOff(t *testing.T) {
+	if settingstype.DefaultSettings().CopyOnSelect {
+		t.Error("DefaultSettings().CopyOnSelect should be false")
+	}
+}
+
 func TestLoadSettingsMissingFileReturnsDefaults(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "does-not-exist.json")
 	got := loadSettings(path)
@@ -191,6 +197,7 @@ func TestSaveAndLoadSettingsRoundTrip(t *testing.T) {
 		VerticalRuler:          12.5,
 		EnsureFinalNewline:     true,
 		Clipboard:              clipboard.ModeInternal,
+		CopyOnSelect:           true,
 	}
 
 	if err := SaveSettings(want); err != nil {
@@ -243,5 +250,31 @@ func TestSettingsOKAppliesClipboardMode(t *testing.T) {
 	}
 	if settings.Clipboard != clipboard.ModeInternal {
 		t.Errorf("settings.Clipboard = %q, want %q", settings.Clipboard, clipboard.ModeInternal)
+	}
+}
+
+func TestSettingsOKAppliesCopyOnSelect(t *testing.T) {
+	newTestHarness(t)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HOME", t.TempDir())
+	previousCopyOnSelect := clipboard.CopyOnSelect()
+	t.Cleanup(func() {
+		clipboard.SetCopyOnSelect(previousCopyOnSelect)
+	})
+
+	copyOnSelectValues := []bool{true, false}
+	for _, copyOnSelect := range copyOnSelectValues {
+		clipboard.SetCopyOnSelect(!copyOnSelect)
+
+		handleSettings()
+		settingsDialog.CopyOnSelectCheckbox.SetChecked(copyOnSelect)
+		settingsDialog.OkButton.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone), func(p tview.Primitive) {})
+
+		if got := clipboard.CopyOnSelect(); got != copyOnSelect {
+			t.Errorf("copy on select after OK = %v, want %v", got, copyOnSelect)
+		}
+		if settings.CopyOnSelect != copyOnSelect {
+			t.Errorf("settings.CopyOnSelect = %v, want %v", settings.CopyOnSelect, copyOnSelect)
+		}
 	}
 }

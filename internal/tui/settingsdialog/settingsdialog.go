@@ -36,6 +36,7 @@ type SettingsDialog struct {
 	TabCharList                    *tview.List
 	TabSizeList                    *tview.List
 	ClipboardList                  *tview.List
+	CopyOnSelectCheckbox           *tview.Checkbox
 	VerticalRulerInputField        *smidgeninputfield.SmidgenInputField
 
 	// Smidgen color scheme list
@@ -228,11 +229,11 @@ func main() {
 			description: "Copies through your terminal with OSC 52, so it also works over SSH. The terminal must support it (e.g. Ghostty, kitty, iTerm2). Inside tmux, set 'set-clipboard on'.\n\nCtrl+V pastes only text copied in Dinky. Use your terminal's paste for text from other apps.",
 		},
 		{
-			label:       " System ",
+			label:       " System            ",
 			description: "Uses the system clipboard (pbcopy, xclip, xsel or wl-copy). Needs a desktop session. Over SSH, copied text stays inside Dinky.",
 		},
 		{
-			label:       " Internal ",
+			label:       " Internal          ",
 			description: "Copied text stays inside Dinky. Nothing is sent to the system or terminal clipboard.",
 		},
 	}
@@ -256,7 +257,16 @@ func main() {
 		clipboardDescription.SetText(clipboardModeOptions[index].description)
 	})
 
-	clipboardPage.AddItem(clipboardOptionsFlex, 0, 1, false)
+	clipboardPage.AddItem(clipboardOptionsFlex, 8, 0, false)
+	clipboardPage.AddItem(nil, 1, 0, false)
+
+	copyOnSelectCheckbox := tview.NewCheckbox()
+	copyOnSelectCheckbox.SetLabel("Copy on Select: ")
+	clipboardPage.AddItem(copyOnSelectCheckbox, 1, 0, false)
+
+	copyOnSelectDescription := tview.NewTextView()
+	copyOnSelectDescription.SetText("Selecting text with the mouse also copies it.")
+	clipboardPage.AddItem(copyOnSelectDescription, 1, 0, false)
 
 	// Tabs: a header of clickable regions that switches between pages.
 	settingsTabs := []struct {
@@ -333,6 +343,7 @@ func main() {
 		TabCharList:                    tabCharList,
 		TabSizeList:                    tabSizeList,
 		ClipboardList:                  clipboardList,
+		CopyOnSelectCheckbox:           copyOnSelectCheckbox,
 		VerticalRulerInputField:        verticalRulerInputField,
 
 		ColorSchemeTableField:             colorSchemeTableField,
@@ -417,6 +428,7 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 		clipboardIndex = 0
 	}
 	sd.ClipboardList.SetCurrentItem(clipboardIndex)
+	sd.CopyOnSelectCheckbox.SetChecked(settings.CopyOnSelect)
 	if settings.TabCharacter == "tab" {
 		sd.TabCharList.SetCurrentItem(0)
 	} else {
@@ -448,6 +460,7 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	newSettings.SoftWrap = sd.SoftWrapCheckbox.IsChecked()
 	newSettings.EnsureFinalNewline = sd.EnsureFinalNewlineCheckbox.IsChecked()
 	newSettings.Clipboard = settingstype.ClipboardModes[sd.ClipboardList.GetCurrentItem()]
+	newSettings.CopyOnSelect = sd.CopyOnSelectCheckbox.IsChecked()
 	tabCharIndex := sd.TabCharList.GetCurrentItem()
 	if tabCharIndex == 0 {
 		newSettings.TabCharacter = "tab"

@@ -193,6 +193,7 @@ func StyleSettingsDialog(sd *settingsdialog.SettingsDialog) {
 	StyleList(sd.TabCharList)
 	StyleList(sd.TabSizeList)
 	StyleList(sd.ClipboardList)
+	StyleCheckbox(sd.CopyOnSelectCheckbox)
 
 	StyleTable(sd.ColorSchemeTableField)
 	sd.SetItemTextColor(stylecolor.White)
