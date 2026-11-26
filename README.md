@@ -75,6 +75,9 @@ Or install with a one-liner (latest release, or a specific PR's build):
 # Latest release (or newest CI build until a release is published)
 curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh
 
+# Install system-wide
+curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh -s -- --install-dir /usr/local/bin
+
 # Build from a specific pull request
 curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh -s -- 10
 ```
@@ -85,6 +88,8 @@ choose another location; it will use `sudo` when the directory is not writable.
 Run `sh install.sh --help` for all options, including `--run-id`, `--repo`, `--dry-run`,
 `-y/--yes`, and the `DINKY_PLATFORM` override (e.g. `DINKY_PLATFORM=linux-amd64`) for
 forcing a download on an unsupported/undetected platform.
+
+> Always audit scripts you are running from the internet!
 
 ### or build from source
 
