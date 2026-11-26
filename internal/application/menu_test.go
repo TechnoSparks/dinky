@@ -21,7 +21,7 @@ func TestCreateMenusStructure(t *testing.T) {
 		"[::u]H[::U]elp",
 	}
 	wantShortcuts := []rune{'f', 'e', 's', 'g', 't', 'v', 'h'}
-	wantItemCounts := []int{11, 15, 8, 11, 13, 8, 1}
+	wantItemCounts := []int{11, 15, 8, 11, 13, 8, 3}
 
 	if len(menus) != len(wantTitles) {
 		t.Fatalf("createMenus returned %d menus, want %d", len(menus), len(wantTitles))

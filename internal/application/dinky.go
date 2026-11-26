@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"dinky/internal/application/settingstype"
 	"dinky/internal/gpm"
+	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
@@ -16,6 +17,7 @@ import (
 	"os"
 	"path"
 	"slices"
+	"syscall"
 
 	"runtime/debug"
 
@@ -36,6 +38,12 @@ var enableLogging bool
 var mouseX, mouseY = -1, -1
 var menus []*menu.Menu
 var fileBufferID string
+
+// pendingInstallerCommand, when non-empty, is executed after the TUI exits.
+var pendingInstallerCommand string
+
+// launchArgs holds the original command-line arguments (before parseCommandLine rewrites os.Args).
+var launchArgs []string
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
 
@@ -493,6 +501,11 @@ var version = ""
 
 func getDinkyVersion() string {
 	if version != "" {
+		// Normalize bare numeric versions (e.g. "0.12.2") to include the
+		// leading "v" used by release tags (e.g. "v0.12.2").
+		if len(version) > 0 && version[0] >= '0' && version[0] <= '9' {
+			return "v" + version
+		}
 		return version
 	}
 	info, ok := debug.ReadBuildInfo()
@@ -509,6 +522,8 @@ func getDinkyVersion() string {
 	}
 	if tag == "" {
 		tag = "untagged"
+	} else if tag != "untagged" && len(tag) > 0 && tag[0] >= '0' && tag[0] <= '9' {
+		tag = "v" + tag
 	}
 	if commit == "" {
 		commit = "unknown"
@@ -581,6 +596,9 @@ func parseCommandLine() bool {
 }
 
 func Main() {
+	// Capture the original arguments before parseCommandLine rewrites os.Args.
+	launchArgs = append([]string{}, os.Args[1:]...)
+
 	// Parse command line arguments first
 	if !parseCommandLine() {
 		return
@@ -605,6 +623,12 @@ func Main() {
 
 	app = tview.NewApplication()
 	tview.DoubleClickInterval = 0 // Disable tview's double-click handling
+
+	app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		w, _ := screen.Size()
+		dialog.ScreenWidth = w
+		return false
+	})
 	app.EnableMouse(true)
 	app.EnablePaste(true)
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -779,6 +803,11 @@ func Main() {
 
 	if err := app.Run(); err != nil {
 		log.Fatalf("Application error: %v", err)
+	}
+
+	if pendingInstallerCommand != "" {
+		// Terminal state has already been restored by tview.
+		syscall.Exec("/bin/sh", []string{"sh", "-c", pendingInstallerCommand}, os.Environ())
 	}
 
 	if gpmClient != nil {

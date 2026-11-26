@@ -5,6 +5,29 @@ import (
 	"github.com/rivo/tview"
 )
 
+// ScreenWidth is the current terminal width. The application updates it on every draw.
+var ScreenWidth int
+
+// clampDialogWidth keeps dialogs from exceeding the preferred maximum (75 columns,
+// matching the Settings dialog) while still fitting on small terminals.
+func clampDialogWidth(width int) int {
+	const preferredMax = 75
+	max := preferredMax
+	if ScreenWidth > 0 && ScreenWidth-4 < max {
+		max = ScreenWidth - 4
+	}
+	if max < 20 {
+		max = 20
+	}
+	if width > max {
+		width = max
+	}
+	if width < 1 {
+		width = 1
+	}
+	return width
+}
+
 type MessageDialog struct {
 	*tview.Flex
 	app *tview.Application
@@ -64,6 +87,8 @@ func NewMessageDialog(app *tview.Application) *MessageDialog {
 // The buttons parameter is a slice of strings representing the button labels.
 // The first button will be focused by default.
 func (d *MessageDialog) Open(title string, message string, buttons []string, width int, height int) {
+	width = clampDialogWidth(width)
+
 	d.verticalContentsFlex.SetTitle(title)
 	d.messageView.SetText(message)
 
