@@ -4,12 +4,35 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"dinky/internal/application/settingstype"
 
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 	"github.com/sedwards2009/smidgen"
+	"github.com/sedwards2009/smidgen/micro/clipboard"
 )
+
+func TestCleanClipboard(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{clipboard.ModeTerminal, clipboard.ModeTerminal},
+		{clipboard.ModeExternal, clipboard.ModeExternal},
+		{clipboard.ModeInternal, clipboard.ModeInternal},
+		{"", clipboard.ModeTerminal},
+		{"banana", clipboard.ModeTerminal},
+	}
+
+	for _, tt := range tests {
+		if got := cleanClipboard(tt.in); got != tt.want {
+			t.Errorf("cleanClipboard(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
 
 func TestCleanTabSize(t *testing.T) {
 	tests := []struct {
@@ -106,7 +129,8 @@ func TestLoadSettingsCleansInvalidValues(t *testing.T) {
 		"tabCharacter": "banana",
 		"colorScheme": "no-such-scheme",
 		"showTrailingWhitespace": false,
-		"verticalRuler": 33.5
+		"verticalRuler": 33.5,
+		"clipboard": "banana"
 	}`
 	if err := os.WriteFile(path, []byte(data), 0644); err != nil {
 		t.Fatal(err)
@@ -122,6 +146,9 @@ func TestLoadSettingsCleansInvalidValues(t *testing.T) {
 	}
 	if got.ColorScheme != "default" {
 		t.Errorf("ColorScheme = %q, want cleaned value %q", got.ColorScheme, "default")
+	}
+	if got.Clipboard != clipboard.ModeTerminal {
+		t.Errorf("Clipboard = %q, want cleaned value %q", got.Clipboard, clipboard.ModeTerminal)
 	}
 
 	// Values that need no cleaning must be preserved.
@@ -163,6 +190,7 @@ func TestSaveAndLoadSettingsRoundTrip(t *testing.T) {
 		ShowTrailingWhitespace: false,
 		VerticalRuler:          12.5,
 		EnsureFinalNewline:     true,
+		Clipboard:              clipboard.ModeInternal,
 	}
 
 	if err := SaveSettings(want); err != nil {
@@ -192,5 +220,28 @@ func TestUserSettingsPathUsesConfigDir(t *testing.T) {
 	want := filepath.Join(configDir, "dinky", "settings.json")
 	if got := userSettingsPath(); got != want {
 		t.Errorf("userSettingsPath() = %q, want %q", got, want)
+	}
+}
+
+func TestSettingsOKAppliesClipboardMode(t *testing.T) {
+	newTestHarness(t)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HOME", t.TempDir())
+	previousMode := clipboard.Mode()
+	t.Cleanup(func() {
+		clipboard.SetMode(previousMode)
+	})
+	clipboard.SetMode(clipboard.ModeTerminal)
+
+	handleSettings()
+	internalIndex := slices.Index(settingstype.ClipboardModes, clipboard.ModeInternal)
+	settingsDialog.ClipboardList.SetCurrentItem(internalIndex)
+	settingsDialog.OkButton.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone), func(p tview.Primitive) {})
+
+	if got := clipboard.Mode(); got != clipboard.ModeInternal {
+		t.Errorf("clipboard mode after OK = %q, want %q", got, clipboard.ModeInternal)
+	}
+	if settings.Clipboard != clipboard.ModeInternal {
+		t.Errorf("settings.Clipboard = %q, want %q", settings.Clipboard, clipboard.ModeInternal)
 	}
 }

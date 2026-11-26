@@ -6,6 +6,7 @@ import (
 	"dinky/internal/tui/smidgeninputfield"
 	"dinky/internal/tui/table2"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -15,6 +16,7 @@ import (
 
 const editorTabID = "editor"
 const themeTabID = "theme"
+const clipboardTabID = "clipboard"
 
 type SettingsDialog struct {
 	*tview.Flex
@@ -33,6 +35,7 @@ type SettingsDialog struct {
 	EnsureFinalNewlineCheckbox     *tview.Checkbox
 	TabCharList                    *tview.List
 	TabSizeList                    *tview.List
+	ClipboardList                  *tview.List
 	VerticalRulerInputField        *smidgeninputfield.SmidgenInputField
 
 	// Smidgen color scheme list
@@ -207,6 +210,54 @@ func main() {
 
 	editorPage.AddItem(optionsColumnFlex, 6, 0, false)
 
+	clipboardPage := tview.NewFlex()
+	clipboardPage.SetDirection(tview.FlexRow)
+
+	clipboardLabel := tview.NewTextView()
+	clipboardLabel.SetText("Clipboard:")
+	clipboardPage.AddItem(clipboardLabel, 1, 0, false)
+	clipboardPage.AddItem(nil, 1, 0, false)
+
+	// Same order as settingstype.ClipboardModes.
+	clipboardModeOptions := []struct {
+		label       string
+		description string
+	}{
+		{
+			label:       " Terminal (OSC 52) ",
+			description: "Copies through your terminal with OSC 52, so it also works over SSH. The terminal must support it (e.g. Ghostty, kitty, iTerm2). Inside tmux, set 'set-clipboard on'.\n\nCtrl+V pastes only text copied in Dinky. Use your terminal's paste for text from other apps.",
+		},
+		{
+			label:       " System ",
+			description: "Uses the system clipboard (pbcopy, xclip, xsel or wl-copy). Needs a desktop session. Over SSH, copied text stays inside Dinky.",
+		},
+		{
+			label:       " Internal ",
+			description: "Copied text stays inside Dinky. Nothing is sent to the system or terminal clipboard.",
+		},
+	}
+
+	clipboardOptionsFlex := tview.NewFlex()
+	clipboardOptionsFlex.SetDirection(tview.FlexColumn)
+
+	clipboardList := tview.NewList()
+	clipboardList.ShowSecondaryText(false)
+	for _, option := range clipboardModeOptions {
+		clipboardList.AddItem(option.label, "", 0, nil)
+	}
+	clipboardOptionsFlex.AddItem(clipboardList, 20, 0, false)
+	clipboardOptionsFlex.AddItem(nil, 2, 0, false)
+
+	clipboardDescription := tview.NewTextView()
+	clipboardDescription.SetWordWrap(true)
+	clipboardDescription.SetText(clipboardModeOptions[0].description)
+	clipboardOptionsFlex.AddItem(clipboardDescription, 0, 1, false)
+	clipboardList.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		clipboardDescription.SetText(clipboardModeOptions[index].description)
+	})
+
+	clipboardPage.AddItem(clipboardOptionsFlex, 0, 1, false)
+
 	// Tabs: a header of clickable regions that switches between pages.
 	settingsTabs := []struct {
 		id    string
@@ -215,6 +266,7 @@ func main() {
 	}{
 		{id: editorTabID, title: "Editor", page: editorPage},
 		{id: themeTabID, title: "Theme", page: themePage},
+		{id: clipboardTabID, title: "Clipboard", page: clipboardPage},
 	}
 
 	pages := tview.NewPages()
@@ -280,6 +332,7 @@ func main() {
 		EnsureFinalNewlineCheckbox:     ensureFinalNewlineCheckbox,
 		TabCharList:                    tabCharList,
 		TabSizeList:                    tabSizeList,
+		ClipboardList:                  clipboardList,
 		VerticalRulerInputField:        verticalRulerInputField,
 
 		ColorSchemeTableField:             colorSchemeTableField,
@@ -359,6 +412,11 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 	sd.ShowMatchBracketCheckbox.SetChecked(settings.ShowMatchBracket)
 	sd.SoftWrapCheckbox.SetChecked(settings.SoftWrap)
 	sd.EnsureFinalNewlineCheckbox.SetChecked(settings.EnsureFinalNewline)
+	clipboardIndex := slices.Index(settingstype.ClipboardModes, settings.Clipboard)
+	if clipboardIndex < 0 {
+		clipboardIndex = 0
+	}
+	sd.ClipboardList.SetCurrentItem(clipboardIndex)
 	if settings.TabCharacter == "tab" {
 		sd.TabCharList.SetCurrentItem(0)
 	} else {
@@ -389,6 +447,7 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	newSettings.ShowMatchBracket = sd.ShowMatchBracketCheckbox.IsChecked()
 	newSettings.SoftWrap = sd.SoftWrapCheckbox.IsChecked()
 	newSettings.EnsureFinalNewline = sd.EnsureFinalNewlineCheckbox.IsChecked()
+	newSettings.Clipboard = settingstype.ClipboardModes[sd.ClipboardList.GetCurrentItem()]
 	tabCharIndex := sd.TabCharList.GetCurrentItem()
 	if tabCharIndex == 0 {
 		newSettings.TabCharacter = "tab"

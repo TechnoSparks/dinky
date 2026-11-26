@@ -24,6 +24,7 @@ import (
 	"github.com/rivo/tview"
 	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/buffer"
+	"github.com/sedwards2009/smidgen/micro/clipboard"
 )
 
 const (
@@ -729,6 +730,7 @@ func handleSettings() tview.Primitive {
 			settings = newSettings
 			SaveSettings(settings)
 			loadEditorColorScheme(settings.ColorScheme)
+			clipboard.SetMode(settings.Clipboard)
 		})
 	}
 	settingsDialog.SetSettings(settings)

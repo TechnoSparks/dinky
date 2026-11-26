@@ -38,7 +38,7 @@ Settings but without having to hack some obscure config file. Folks, we're livin
 - **File dialog**: You know, a normal file dialog
 - **Multi-cursor editing**: Add cursors for simultaneous editing
 - **Undo/Redo**: Full undo history
-- **Cut/Copy/Paste**: Standard clipboard operations, also uses the desktop clipboard when available.
+- **Cut/Copy/Paste**: Standard clipboard operations. Choose in Settings → Clipboard whether to copy through the terminal (OSC 52, works over SSH, the default), the system clipboard, or keep text inside Dinky.
 - **Desktop style keyboard shortcuts**: and menus which show the shortcuts so you can subconsciously learn them while you ~~sleep~~ work.
 - **Go to Line**: Jump to specific lines & columns
 - **Find**: Find that needle in the haystack

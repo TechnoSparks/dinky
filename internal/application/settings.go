@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/sedwards2009/smidgen"
 )
@@ -42,6 +43,7 @@ func loadSettings(settingsPath string) settingstype.Settings {
 	settings.TabSize = cleanTabSize(settings.TabSize)
 	settings.TabCharacter = cleanTabCharacter(settings.TabCharacter)
 	settings.ColorScheme = cleanColorSchemeName(settings.ColorScheme)
+	settings.Clipboard = cleanClipboard(settings.Clipboard)
 
 	return settings
 }
@@ -96,4 +98,11 @@ func cleanColorSchemeName(colorScheme string) string {
 		}
 	}
 	return "default"
+}
+
+func cleanClipboard(clipboardMode string) string {
+	if slices.Contains(settingstype.ClipboardModes, clipboardMode) {
+		return clipboardMode
+	}
+	return settingstype.DefaultSettings().Clipboard
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/sedwards2009/smidgen/micro/clipboard"
 )
 
 const screenWidth = 80
@@ -154,4 +155,46 @@ func TestSettingsDialogSetSettingsResetsToEditorTab(t *testing.T) {
 	sd.SetSettings(settingstype.DefaultSettings())
 	draw(sd, screen)
 	assertEditorTab(t, screen)
+}
+
+func TestSettingsDialogClipboardTab(t *testing.T) {
+	sd, screen := newTestDialog(t)
+
+	clickText(t, sd, screen, "Clipboard")
+	if !screenContains(screen, "Terminal (OSC 52)") {
+		t.Error("Clipboard tab not shown: \"Terminal (OSC 52)\" missing")
+	}
+	if screenContains(screen, "Defaults") || screenContains(screen, "Color Scheme:") {
+		t.Error("other tab content shown on Clipboard tab")
+	}
+	if !screenContains(screen, "works over SSH") {
+		t.Error("description for the default Terminal mode is missing")
+	}
+
+	// Moving the selection shows the description of that mode.
+	sd.ClipboardList.SetCurrentItem(1)
+	draw(sd, screen)
+	if !screenContains(screen, "Needs a desktop session") {
+		t.Error("description did not change to the System mode")
+	}
+}
+
+func TestSettingsDialogClipboardSettingRoundTrip(t *testing.T) {
+	clipboardModes := []string{clipboard.ModeTerminal, clipboard.ModeExternal, clipboard.ModeInternal}
+	for _, clipboardMode := range clipboardModes {
+		sd, _ := newTestDialog(t)
+		settings := settingstype.DefaultSettings()
+		settings.Clipboard = clipboardMode
+		sd.SetSettings(settings)
+
+		var got settingstype.Settings
+		sd.SetOkFunc(func(newSettings settingstype.Settings) {
+			got = newSettings
+		})
+		sd.OkButton.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone), func(p tview.Primitive) {})
+
+		if got.Clipboard != clipboardMode {
+			t.Errorf("OK returned Clipboard = %q, want %q", got.Clipboard, clipboardMode)
+		}
+	}
 }
