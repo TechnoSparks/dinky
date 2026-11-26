@@ -4,6 +4,10 @@
 
 > A little text editor that just works
 
+> **This is a fork of [Dinky](https://github.com/sedwards2009/dinky) by [Simon Edwards (sedwards2009)](https://github.com/sedwards2009) — the original creator and maintainer of both Dinky and smidgen (the editing engine at its heart). A massive, heartfelt thank you; this project would not exist without his work. Extreme gratitude.** 💙
+>
+> Looking for the original/stable Dinky? See [sedwards2009/dinky](https://github.com/sedwards2009/dinky). This fork has diverged with goals I personally believed may not align with original creator.
+
 Dinky is a terminal-based text editor designed for people who want to quickly edit text without having to learn the arcane ways of vi, emacs, or other traditional terminal editors. It wraps the excellent editor component from [micro](https://github.com/zyedidia/micro) with a familiar GUI-style interface complete with menus, dialogs, and intuitive navigation.
 
 **GitHub Repository:** https://github.com/TechnoSparks/dinky
