@@ -62,7 +62,7 @@ Put colour scheme files ending in `.micro` in the `colorschemes` folder next to 
 - Linux: `~/.config/dinky/colorschemes/`
 - macOS: `~/Library/Application Support/dinky/colorschemes/`
 
-They use the same format as [micro's colour schemes](https://github.com/micro-editor/micro/blob/master/runtime/help/colors.md), so you can copy a micro colour scheme straight in. `include` lines are not supported. A file with the same name as a built-in scheme replaces it. New files show up the next time you open Settings.
+They use the same format as [micro's colour schemes](https://github.com/micro-editor/micro/blob/master/runtime/help/colors.md), so you can copy a micro colour scheme straight in. `include` lines are not supported. A file with the same name as a built-in scheme replaces it. New files show up the next time you open Settings. Lines that aren't valid are skipped, and the first one is shown in the status bar when the scheme is applied.
 
 
 ## Installation
