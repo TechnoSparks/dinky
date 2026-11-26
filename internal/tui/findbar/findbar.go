@@ -26,7 +26,7 @@ type Findbar struct {
 	ExpanderCheckbox           *tview.Checkbox
 	RegexCheckbox              *tview.Checkbox
 	CaseSensitiveCheckbox      *tview.Checkbox
-	WholeWordCheckbox         *tview.Checkbox
+	WholeWordCheckbox          *tview.Checkbox
 	OnClose                    func()
 	OnError                    func(err error)
 	OnExpand                   func(expanded bool)
@@ -217,28 +217,29 @@ func (f *Findbar) SetReplaceTextHistory(history []string) {
 	f.ReplaceStringField.SetHistory(history)
 }
 
+// searchPattern returns the pattern and regex flag to search with, applying the Whole Word option.
+func (f *Findbar) searchPattern(searchText string) (string, bool) {
+	regex := f.RegexCheckbox.IsChecked()
+	if !f.WholeWordCheckbox.IsChecked() {
+		return searchText, regex
+	}
+	if !regex {
+		searchText = regexp.QuoteMeta(searchText)
+	}
+	return `\b(?:` + searchText + `)\b`, true
+}
+
 func (f *Findbar) search(directionDown bool) bool {
 	searchText := f.SearchStringField.GetText()
 	if searchText == "" {
 		return false
 	}
-	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
-	wholeWord := f.WholeWordCheckbox.IsChecked()
 
 	f.updateSearchTextHistory(searchText)
 
-	effectivePattern := searchText
-	effectiveRegex := regex
-	if wholeWord {
-		if !regex {
-			effectivePattern = regexp.QuoteMeta(searchText)
-		}
-		effectivePattern = `\b(?:` + effectivePattern + `)\b`
-		effectiveRegex = true
-	}
-
-	found, err := f.editor.ActionController().Search(effectivePattern, effectiveRegex, caseSensitive, directionDown)
+	pattern, regex := f.searchPattern(searchText)
+	found, err := f.editor.ActionController().Search(pattern, regex, caseSensitive, directionDown)
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -262,7 +263,7 @@ func (f *Findbar) search(directionDown bool) bool {
 		f.editor.Cursor().SetSelectionStart(wrapLoc)
 		f.editor.Cursor().SetSelectionEnd(wrapLoc)
 
-		found, _ := f.editor.ActionController().Search(effectivePattern, effectiveRegex, caseSensitive, directionDown)
+		found, _ := f.editor.ActionController().Search(pattern, regex, caseSensitive, directionDown)
 		if !found {
 			// Restore previous cursor position if not found
 			f.editor.Cursor().GotoLoc(prevLoc)
@@ -333,22 +334,9 @@ func (f *Findbar) ReplaceAll() {
 	replaceText := f.ReplaceStringField.GetText()
 	f.updateReplaceTextHistory(replaceText)
 
-	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
-	wholeWord := f.WholeWordCheckbox.IsChecked()
-
-	searchText := f.SearchStringField.GetText()
-	effectivePattern := searchText
-	effectiveRegex := regex
-	if wholeWord {
-		if !regex {
-			effectivePattern = regexp.QuoteMeta(searchText)
-		}
-		effectivePattern = `\b(?:` + effectivePattern + `)\b`
-		effectiveRegex = true
-	}
-
-	count, err := f.editor.ActionController().ReplaceAll(effectivePattern, effectiveRegex, caseSensitive,
+	pattern, regex := f.searchPattern(f.SearchStringField.GetText())
+	count, err := f.editor.ActionController().ReplaceAll(pattern, regex, caseSensitive,
 		replaceText)
 	if err != nil {
 		if f.OnError != nil {
