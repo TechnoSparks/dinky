@@ -229,11 +229,11 @@ func main() {
 			description: "Copies through your terminal with OSC 52, so it also works over SSH. The terminal must support it (e.g. Ghostty, kitty, iTerm2). Inside tmux, set 'set-clipboard on'.\n\nCtrl+V pastes only text copied in Dinky. Use your terminal's paste for text from other apps.",
 		},
 		{
-			label:       " System ",
+			label:       " System            ",
 			description: "Uses the system clipboard (pbcopy, xclip, xsel or wl-copy). Needs a desktop session. Over SSH, copied text stays inside Dinky.",
 		},
 		{
-			label:       " Internal ",
+			label:       " Internal          ",
 			description: "Copied text stays inside Dinky. Nothing is sent to the system or terminal clipboard.",
 		},
 	}
