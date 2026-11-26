@@ -390,7 +390,7 @@ func (sd *SettingsDialog) handleColorSchemeSelected(row int, column int) {
 		return
 	}
 	colorschemeName := sd.colorFiles[row]
-	if colorscheme, ok := smidgen.LoadInternalColorscheme(colorschemeName); ok {
+	if colorscheme, ok := smidgen.LoadColorscheme(colorschemeName); ok {
 		sd.ColorSchemePreviewEditor.SetColorscheme(colorscheme)
 		sd.selectedColorScheme = colorschemeName
 	}
@@ -407,6 +407,10 @@ func (sd *SettingsDialog) SetCloseFunc(closeFunc func()) {
 func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 	// The dialog is reused, so always reopen on the first tab.
 	sd.tabHeader.Highlight(editorTabID)
+
+	// Pick up user colorschemes added since the dialog was last opened.
+	sd.colorFiles = smidgen.ListColorschemes()
+	sd.loadColorSchemes()
 
 	for rowIndex, item := range sd.colorFiles {
 		if item == settings.ColorScheme {
