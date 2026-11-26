@@ -36,6 +36,7 @@ type SettingsDialog struct {
 	TabCharList                    *tview.List
 	TabSizeList                    *tview.List
 	ClipboardList                  *tview.List
+	CopyOnSelectCheckbox           *tview.Checkbox
 	VerticalRulerInputField        *smidgeninputfield.SmidgenInputField
 
 	// Smidgen color scheme list
@@ -256,7 +257,16 @@ func main() {
 		clipboardDescription.SetText(clipboardModeOptions[index].description)
 	})
 
-	clipboardPage.AddItem(clipboardOptionsFlex, 0, 1, false)
+	clipboardPage.AddItem(clipboardOptionsFlex, 8, 0, false)
+	clipboardPage.AddItem(nil, 1, 0, false)
+
+	copyOnSelectCheckbox := tview.NewCheckbox()
+	copyOnSelectCheckbox.SetLabel("Copy on Select: ")
+	clipboardPage.AddItem(copyOnSelectCheckbox, 1, 0, false)
+
+	copyOnSelectDescription := tview.NewTextView()
+	copyOnSelectDescription.SetText("Selecting text with the mouse also copies it.")
+	clipboardPage.AddItem(copyOnSelectDescription, 1, 0, false)
 
 	// Tabs: a header of clickable regions that switches between pages.
 	settingsTabs := []struct {
@@ -333,6 +343,7 @@ func main() {
 		TabCharList:                    tabCharList,
 		TabSizeList:                    tabSizeList,
 		ClipboardList:                  clipboardList,
+		CopyOnSelectCheckbox:           copyOnSelectCheckbox,
 		VerticalRulerInputField:        verticalRulerInputField,
 
 		ColorSchemeTableField:             colorSchemeTableField,
@@ -417,6 +428,7 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 		clipboardIndex = 0
 	}
 	sd.ClipboardList.SetCurrentItem(clipboardIndex)
+	sd.CopyOnSelectCheckbox.SetChecked(settings.CopyOnSelect)
 	if settings.TabCharacter == "tab" {
 		sd.TabCharList.SetCurrentItem(0)
 	} else {
@@ -448,6 +460,7 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	newSettings.SoftWrap = sd.SoftWrapCheckbox.IsChecked()
 	newSettings.EnsureFinalNewline = sd.EnsureFinalNewlineCheckbox.IsChecked()
 	newSettings.Clipboard = settingstype.ClipboardModes[sd.ClipboardList.GetCurrentItem()]
+	newSettings.CopyOnSelect = sd.CopyOnSelectCheckbox.IsChecked()
 	tabCharIndex := sd.TabCharList.GetCurrentItem()
 	if tabCharIndex == 0 {
 		newSettings.TabCharacter = "tab"
