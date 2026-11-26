@@ -77,7 +77,7 @@ var findbarRecentReplaceTextHistory []string
 // -----------------------------------------------------------------
 func loadEditorColorScheme(colorSchemeName string) {
 	var ok bool
-	colorscheme, ok = smidgen.LoadInternalColorscheme(colorSchemeName)
+	colorscheme, ok = smidgen.LoadColorscheme(colorSchemeName)
 	if !ok {
 		colorscheme, _ = smidgen.LoadInternalColorscheme("monokai")
 	}
@@ -573,6 +573,7 @@ func Main() {
 		log.SetOutput(io.Discard)
 	}
 
+	smidgen.SetUserColorschemeDir(userColorschemesDirPath())
 	settings = LoadUserSettings()
 	clipboard.SetMode(settings.Clipboard)
 	clipboard.SetCopyOnSelect(settings.CopyOnSelect)

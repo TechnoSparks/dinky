@@ -92,6 +92,31 @@ func TestCleanColorSchemeName(t *testing.T) {
 	}
 }
 
+func TestCleanColorSchemeNameKeepsUserColorscheme(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "mine.micro"), []byte(`color-link default "#112233,#445566"`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	smidgen.SetUserColorschemeDir(dir)
+	t.Cleanup(func() {
+		smidgen.SetUserColorschemeDir("")
+	})
+
+	if got := cleanColorSchemeName("mine"); got != "mine" {
+		t.Errorf("cleanColorSchemeName(%q) = %q, want unchanged", "mine", got)
+	}
+}
+
+func TestUserColorschemesDirPathUsesConfigDir(t *testing.T) {
+	configDir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", configDir)
+
+	want := filepath.Join(configDir, "dinky", "colorschemes")
+	if got := userColorschemesDirPath(); got != want {
+		t.Errorf("userColorschemesDirPath() = %q, want %q", got, want)
+	}
+}
+
 func TestDefaultSettingsEnsureFinalNewline(t *testing.T) {
 	if !settingstype.DefaultSettings().EnsureFinalNewline {
 		t.Error("DefaultSettings().EnsureFinalNewline should be true")
