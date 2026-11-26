@@ -303,3 +303,45 @@ func TestSettingsOKAppliesCopyOnSelect(t *testing.T) {
 		}
 	}
 }
+
+func TestLoadEditorColorSchemeAppliesUserColorscheme(t *testing.T) {
+	h := newTestHarness(t)
+	dir := t.TempDir()
+	text := `color-link default "#112233,#445566"`
+	if err := os.WriteFile(filepath.Join(dir, "mine.micro"), []byte(text), 0644); err != nil {
+		t.Fatal(err)
+	}
+	smidgen.SetUserColorschemeDir(dir)
+	t.Cleanup(func() {
+		smidgen.SetUserColorschemeDir("")
+	})
+	fb := h.open("hello", "")
+	wantForeground := tcell.GetColor("#112233")
+	wantBackground := tcell.GetColor("#445566")
+
+	loadEditorColorScheme("mine")
+
+	_, editorBackground, _ := colorscheme.GetColor("default").Decompose()
+	if editorBackground != wantBackground {
+		t.Errorf("editor background = %v, want %v", editorBackground, wantBackground)
+	}
+	tabForeground, tabBackground, _ := tabBarLine.ActiveTabStyle.Decompose()
+	if tabForeground != wantForeground || tabBackground != wantBackground {
+		t.Errorf("active tab = %v on %v, want %v on %v", tabForeground, tabBackground, wantForeground, wantBackground)
+	}
+	if got := fb.hScrollbar.Track.GetBackgroundColor(); got != wantBackground {
+		t.Errorf("scrollbar background = %v, want %v", got, wantBackground)
+	}
+}
+
+func TestLoadEditorColorSchemeUnknownNameFallsBackToMonokai(t *testing.T) {
+	newTestHarness(t)
+	monokai, _ := smidgen.LoadInternalColorscheme("monokai")
+	_, wantBackground, _ := monokai.GetColor("default").Decompose()
+
+	loadEditorColorScheme("no-such-scheme")
+
+	if _, got, _ := colorscheme.GetColor("default").Decompose(); got != wantBackground {
+		t.Errorf("editor background = %v, want monokai's %v", got, wantBackground)
+	}
+}
