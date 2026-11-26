@@ -235,8 +235,17 @@ func writeFile(filename string, buf *buffer.Buffer) (ok bool, message string) {
 
 	// Add the final newline to the buffer itself so the editor reflects it
 	// immediately after saving, rather than only after reopening the file.
+	// Restore the cursors afterwards, as Insert moves any cursor at the end.
 	if needFinalNewline {
+		cursors := buf.GetCursors()
+		cursorLocs := make([]buffer.Loc, len(cursors))
+		for i, cursor := range cursors {
+			cursorLocs[i] = cursor.Loc
+		}
 		buf.Insert(buf.End(), "\n")
+		for i, cursor := range cursors {
+			cursor.Loc = cursorLocs[i]
+		}
 	}
 
 	return true, "Wrote file " + filename
