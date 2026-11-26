@@ -439,3 +439,27 @@ func TestSettingsOKShowsColorschemeWarning(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadEditorColorSchemeWarnsForUnreadableFile(t *testing.T) {
+	newTestHarness(t)
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, "broken.micro"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	smidgen.SetUserColorschemeDir(dir)
+	t.Cleanup(func() {
+		smidgen.SetUserColorschemeDir("")
+	})
+
+	warning := loadEditorColorScheme("broken")
+
+	if !strings.HasPrefix(warning, "broken.micro: cannot read file: ") {
+		t.Errorf("warning = %q, want a \"broken.micro: cannot read file: ...\" warning", warning)
+	}
+	// With no built-in of that name, the editor falls back to monokai.
+	monokai, _ := smidgen.LoadInternalColorscheme("monokai")
+	_, wantBackground, _ := monokai.GetColor("default").Decompose()
+	if _, got, _ := colorscheme.GetColor("default").Decompose(); got != wantBackground {
+		t.Errorf("editor background = %v, want monokai's %v", got, wantBackground)
+	}
+}
