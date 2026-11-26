@@ -24,6 +24,7 @@ import (
 	"github.com/rivo/tview"
 	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/buffer"
+	"github.com/sedwards2009/smidgen/micro/clipboard"
 	"github.com/sedwards2009/smidgen/micro/display"
 	"github.com/sedwards2009/smidgen/micro/util"
 )
@@ -573,6 +574,7 @@ func Main() {
 	}
 
 	settings = LoadUserSettings()
+	clipboard.SetMode(settings.Clipboard)
 
 	initKeyBindings()
 

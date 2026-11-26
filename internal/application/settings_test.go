@@ -9,7 +9,27 @@ import (
 	"dinky/internal/application/settingstype"
 
 	"github.com/sedwards2009/smidgen"
+	"github.com/sedwards2009/smidgen/micro/clipboard"
 )
+
+func TestCleanClipboard(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{clipboard.ModeTerminal, clipboard.ModeTerminal},
+		{clipboard.ModeExternal, clipboard.ModeExternal},
+		{clipboard.ModeInternal, clipboard.ModeInternal},
+		{"", clipboard.ModeTerminal},
+		{"banana", clipboard.ModeTerminal},
+	}
+
+	for _, tt := range tests {
+		if got := cleanClipboard(tt.in); got != tt.want {
+			t.Errorf("cleanClipboard(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
 
 func TestCleanTabSize(t *testing.T) {
 	tests := []struct {
@@ -106,7 +126,8 @@ func TestLoadSettingsCleansInvalidValues(t *testing.T) {
 		"tabCharacter": "banana",
 		"colorScheme": "no-such-scheme",
 		"showTrailingWhitespace": false,
-		"verticalRuler": 33.5
+		"verticalRuler": 33.5,
+		"clipboard": "banana"
 	}`
 	if err := os.WriteFile(path, []byte(data), 0644); err != nil {
 		t.Fatal(err)
@@ -122,6 +143,9 @@ func TestLoadSettingsCleansInvalidValues(t *testing.T) {
 	}
 	if got.ColorScheme != "default" {
 		t.Errorf("ColorScheme = %q, want cleaned value %q", got.ColorScheme, "default")
+	}
+	if got.Clipboard != clipboard.ModeTerminal {
+		t.Errorf("Clipboard = %q, want cleaned value %q", got.Clipboard, clipboard.ModeTerminal)
 	}
 
 	// Values that need no cleaning must be preserved.
@@ -163,6 +187,7 @@ func TestSaveAndLoadSettingsRoundTrip(t *testing.T) {
 		ShowTrailingWhitespace: false,
 		VerticalRuler:          12.5,
 		EnsureFinalNewline:     true,
+		Clipboard:              clipboard.ModeInternal,
 	}
 
 	if err := SaveSettings(want); err != nil {

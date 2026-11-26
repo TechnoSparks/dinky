@@ -1,5 +1,10 @@
 package settingstype
 
+import "github.com/sedwards2009/smidgen/micro/clipboard"
+
+// ClipboardModes lists the clipboard modes in the order the Settings dialog shows them.
+var ClipboardModes = []string{clipboard.ModeTerminal, clipboard.ModeExternal, clipboard.ModeInternal}
+
 type Settings struct {
 	ShowWhitespace         bool    `json:"showWhitespace"`
 	ShowLineNumbers        bool    `json:"showLineNumbers"`
@@ -11,6 +16,7 @@ type Settings struct {
 	ShowTrailingWhitespace bool    `json:"showTrailingWhitespace"`
 	VerticalRuler          float64 `json:"verticalRuler"` // 0.0 means off
 	EnsureFinalNewline     bool    `json:"ensureFinalNewline"`
+	Clipboard              string  `json:"clipboard"` // one of ClipboardModes
 }
 
 func DefaultSettings() Settings {
@@ -25,5 +31,6 @@ func DefaultSettings() Settings {
 		ShowTrailingWhitespace: true,
 		VerticalRuler:          0.0,
 		EnsureFinalNewline:     true,
+		Clipboard:              clipboard.ModeTerminal,
 	}
 }
