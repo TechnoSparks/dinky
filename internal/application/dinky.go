@@ -75,9 +75,12 @@ var findbarRecentSearchTextHistory []string
 var findbarRecentReplaceTextHistory []string
 
 // -----------------------------------------------------------------
-func loadEditorColorScheme(colorSchemeName string) {
+// loadEditorColorScheme applies the colour scheme. It returns a warning for the status bar if
+// the colour scheme file has invalid lines, or "" if it has none.
+func loadEditorColorScheme(colorSchemeName string) string {
 	var ok bool
-	colorscheme, ok = smidgen.LoadColorscheme(colorSchemeName)
+	var problems []string
+	colorscheme, problems, ok = smidgen.LoadColorschemeWithProblems(colorSchemeName)
 	if !ok {
 		colorscheme, _ = smidgen.LoadInternalColorscheme("monokai")
 	}
@@ -97,6 +100,20 @@ func loadEditorColorScheme(colorSchemeName string) {
 	// tabs keep a light foreground on the grey background for contrast.
 	tabBarLine.ActiveTabStyle = tabBarLine.ActiveTabStyle.Foreground(fg)
 	tabBarLine.SetTabBackgroundColor(bg)
+
+	return colorschemeWarning(colorSchemeName, problems)
+}
+
+// colorschemeWarning describes the first problem found in a colour scheme file, and how many more there are.
+func colorschemeWarning(colorSchemeName string, problems []string) string {
+	if len(problems) == 0 {
+		return ""
+	}
+	warning := colorSchemeName + ".micro: " + problems[0]
+	if len(problems) > 1 {
+		warning += fmt.Sprintf(" (and %d more)", len(problems)-1)
+	}
+	return warning
 }
 
 func newFile(contents string, filename string) {
@@ -629,7 +646,7 @@ func Main() {
 		}
 	}
 
-	loadEditorColorScheme(settings.ColorScheme)
+	colorschemeProblem := loadEditorColorScheme(settings.ColorScheme)
 	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
 	editorPages = tview.NewPages()
@@ -637,6 +654,9 @@ func Main() {
 
 	statusBar = statusbar.NewStatusBar(app)
 	statusBar.UpdateHook = syncStatusBarFromFileBuffer
+	if colorschemeProblem != "" {
+		statusBar.ShowWarning(colorschemeProblem)
+	}
 	mainUiFlex.AddItem(statusBar, 1, 0, false)
 
 	modalPages.AddPage("workspace", mainUiFlex, true, true)
