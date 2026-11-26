@@ -10,6 +10,7 @@ type Settings struct {
 	ColorScheme            string  `json:"colorScheme"`
 	ShowTrailingWhitespace bool    `json:"showTrailingWhitespace"`
 	VerticalRuler          float64 `json:"verticalRuler"` // 0.0 means off
+	EnsureFinalNewline     bool    `json:"ensureFinalNewline"`
 }
 
 func DefaultSettings() Settings {
@@ -23,5 +24,6 @@ func DefaultSettings() Settings {
 		ColorScheme:            "default",
 		ShowTrailingWhitespace: true,
 		VerticalRuler:          0.0,
+		EnsureFinalNewline:     true,
 	}
 }

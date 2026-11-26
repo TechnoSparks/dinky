@@ -206,12 +206,48 @@ func bufferToBytes(buffer *buffer.Buffer) []byte {
 	return buffer.LineArray.Bytes()
 }
 
-func writeFile(filename string, buffer *buffer.Buffer) (ok bool, message string) {
-	contents := bufferToBytes(buffer)
+func writeFile(filename string, buf *buffer.Buffer) (ok bool, message string) {
+	// Keep the on-disk line endings consistent with Dinky's EOL setting.
+	if isBufferCRLF(buf) {
+		buf.LineArray.Endings = buffer.FFDos
+	} else {
+		buf.LineArray.Endings = buffer.FFUnix
+	}
+
+	// Each buffer takes the "Ensure Final Newline" default when it is opened.
+	ensureFinalNewline, _ := buf.Settings["eofnewline"].(bool)
+	needFinalNewline := ensureFinalNewline && buf.LinesNum() > 0 &&
+		len(buf.LineBytes(buf.LinesNum()-1)) > 0
+
+	contents := bufferToBytes(buf)
+	if needFinalNewline {
+		if buf.LineArray.Endings == buffer.FFDos {
+			contents = append(contents, '\r', '\n')
+		} else {
+			contents = append(contents, '\n')
+		}
+	}
+
 	err := renameio.WriteFile(filename, contents, 0644)
 	if err != nil {
 		return false, "Error writing file: " + err.Error()
 	}
+
+	// Add the final newline to the buffer itself so the editor reflects it
+	// immediately after saving, rather than only after reopening the file.
+	// Restore the cursors afterwards, as Insert moves any cursor at the end.
+	if needFinalNewline {
+		cursors := buf.GetCursors()
+		cursorLocs := make([]buffer.Loc, len(cursors))
+		for i, cursor := range cursors {
+			cursorLocs[i] = cursor.Loc
+		}
+		buf.Insert(buf.End(), "\n")
+		for i, cursor := range cursors {
+			cursor.Loc = cursorLocs[i]
+		}
+	}
+
 	return true, "Wrote file " + filename
 }
 
@@ -444,10 +480,10 @@ func handleSetLineEndings() tview.Primitive {
 			if index < len(buttons)-1 { // Not cancel
 				switch index {
 				case 0:
-					buffer.Settings["fileformat"] = "unix"
+					buffer.SetOptionNative("fileformat", "unix")
 					statusBar.ShowMessage("Line endings set to LF (Unix)")
 				case 1:
-					buffer.Settings["fileformat"] = "dos"
+					buffer.SetOptionNative("fileformat", "dos")
 					statusBar.ShowMessage("Line endings set to CRLF (DOS)")
 				}
 				syncMenuFromBuffer(buffer)

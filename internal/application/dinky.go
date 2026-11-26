@@ -113,6 +113,7 @@ func newFile(contents string, filename string) {
 	buffer.Settings["tabstospaces"] = settings.TabCharacter == "space"
 	buffer.Settings["hltrailingws"] = settings.ShowTrailingWhitespace
 	buffer.Settings["colorcolumn"] = settings.VerticalRuler
+	buffer.Settings["eofnewline"] = settings.EnsureFinalNewline
 
 	// The editor and the horizontal scrollbar are stacked vertically so that
 	// the horizontal scrollbar spans only the editor's width (not the column

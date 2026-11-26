@@ -549,8 +549,137 @@ func TestWriteFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(data) != h.text() {
-		t.Errorf("written contents = %q, want %q", data, h.text())
+	want := h.text()
+	if fb.buffer.Settings["eofnewline"].(bool) && len(want) > 0 && want[len(want)-1] != '\n' {
+		want += "\n"
+	}
+	if string(data) != want {
+		t.Errorf("written contents = %q, want %q", data, want)
+	}
+}
+
+func TestWriteFileEnsureFinalNewline(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello\nworld", "")
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	// Disabled: write exactly what the buffer contains.
+	fb.buffer.Settings["eofnewline"] = false
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\nworld" {
+		t.Errorf("with ensure off: got %q, want %q", data, "hello\\nworld")
+	}
+
+	// Enabled: a final newline is added to both the file and the buffer.
+	fb.buffer.Settings["eofnewline"] = true
+	path2 := filepath.Join(t.TempDir(), "out2.txt")
+	ok, message = writeFile(path2, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ = os.ReadFile(path2)
+	if string(data) != "hello\nworld\n" {
+		t.Errorf("with ensure on: got %q, want %q", data, "hello\\nworld\\n")
+	}
+	if got := h.text(); got != "hello\nworld\n" {
+		t.Errorf("buffer after save = %q, want trailing newline", got)
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineCRLF(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello\nworld", "")
+	fb.buffer.Settings["fileformat"] = "dos"
+	fb.buffer.LineArray.Endings = buffer.FFDos
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	fb.buffer.Settings["eofnewline"] = true
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\r\nworld\r\n" {
+		t.Errorf("got %q, want %q", data, "hello\\r\\nworld\\r\\n")
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineKeepsCursor(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello\nworld", "")
+	fb.buffer.Settings["eofnewline"] = true
+	cursor := fb.editor.Cursor()
+	cursor.Loc = buffer.Loc{X: 5, Y: 1}
+
+	ok, message := writeFile(filepath.Join(t.TempDir(), "out.txt"), fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	want := buffer.Loc{X: 5, Y: 1}
+	if cursor.Loc != want {
+		t.Errorf("cursor after save = %+v, want %+v", cursor.Loc, want)
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineOnlyOnce(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello", "")
+	fb.buffer.Settings["eofnewline"] = true
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	for i := 0; i < 2; i++ {
+		ok, message := writeFile(path, fb.buffer)
+		if !ok {
+			t.Fatalf("writeFile %d failed: %s", i+1, message)
+		}
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\n" {
+		t.Errorf("file after two saves = %q, want %q", data, "hello\\n")
+	}
+	if got := h.text(); got != "hello\n" {
+		t.Errorf("buffer after two saves = %q, want %q", got, "hello\\n")
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineEmptyBuffer(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("", "")
+	fb.buffer.Settings["eofnewline"] = true
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if len(data) != 0 {
+		t.Errorf("file = %q, want empty", data)
+	}
+	if got := h.text(); got != "" {
+		t.Errorf("buffer = %q, want empty", got)
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineUsesBufferSetting(t *testing.T) {
+	h := newTestHarness(t)
+	settings.EnsureFinalNewline = true
+	fb := h.open("hello", "")
+	// Changing the default after opening must not affect this buffer.
+	settings.EnsureFinalNewline = false
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\n" {
+		t.Errorf("file = %q, want %q", data, "hello\\n")
 	}
 }
 
