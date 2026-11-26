@@ -2,9 +2,9 @@
 # Dinky installer.
 #
 # By default installs the latest published release. Pass a PR number as the
+# first argument to install the build produced by that pull request instead:
 #
 # UX inspired by getmic.ro (https://getmic.ro) by Ben Weissmann.
-# first argument to install the build produced by that pull request instead:
 #
 #   curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh
 #   curl -fsSL .../install.sh | sh -s -- 42
@@ -128,7 +128,6 @@ ART_ID=
 DIGEST=
 DOWNLOAD_URL=
 RELEASE_TAG=
-PR_RUN_URL=
 
 # --- Resolve source --------------------------------------------------------
 if [ -n "$PR_NUMBER" ] || [ -n "$RUN_ID" ]; then
@@ -198,7 +197,7 @@ fi
 # --- dry run ---------------------------------------------------------------
 if [ "$DRY_RUN" -eq 1 ]; then
   if [ "$SOURCE" = release ]; then info "source: release $RELEASE_TAG"
-  else info "source: CI run $RUN_ID (artifact $ART_ID)"; info "sha256: $DIGEST"; fi
+  else info "source: CI run $RUN_ID (artifact $ART_ID)"; info "sha256: ${DIGEST#sha256:}"; fi
   info "url: $DOWNLOAD_URL"
   exit 0
 fi
