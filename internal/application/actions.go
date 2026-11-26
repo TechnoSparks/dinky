@@ -214,10 +214,8 @@ func writeFile(filename string, buf *buffer.Buffer) (ok bool, message string) {
 		buf.LineArray.Endings = buffer.FFUnix
 	}
 
-	ensureFinalNewline := settings.EnsureFinalNewline
-	if v, ok := buf.Settings["eofnewline"].(bool); ok {
-		ensureFinalNewline = ensureFinalNewline && v
-	}
+	// Each buffer takes the "Ensure Final Newline" default when it is opened.
+	ensureFinalNewline, _ := buf.Settings["eofnewline"].(bool)
 	needFinalNewline := ensureFinalNewline && buf.LinesNum() > 0 &&
 		len(buf.LineBytes(buf.LinesNum()-1)) > 0
 

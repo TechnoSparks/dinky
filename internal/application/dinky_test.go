@@ -550,7 +550,7 @@ func TestWriteFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := h.text()
-	if settings.EnsureFinalNewline && len(want) > 0 && want[len(want)-1] != '\n' {
+	if fb.buffer.Settings["eofnewline"].(bool) && len(want) > 0 && want[len(want)-1] != '\n' {
 		want += "\n"
 	}
 	if string(data) != want {
@@ -564,7 +564,7 @@ func TestWriteFileEnsureFinalNewline(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "out.txt")
 
 	// Disabled: write exactly what the buffer contains.
-	settings.EnsureFinalNewline = false
+	fb.buffer.Settings["eofnewline"] = false
 	ok, message := writeFile(path, fb.buffer)
 	if !ok {
 		t.Fatalf("writeFile failed: %s", message)
@@ -575,7 +575,7 @@ func TestWriteFileEnsureFinalNewline(t *testing.T) {
 	}
 
 	// Enabled: a final newline is added to both the file and the buffer.
-	settings.EnsureFinalNewline = true
+	fb.buffer.Settings["eofnewline"] = true
 	path2 := filepath.Join(t.TempDir(), "out2.txt")
 	ok, message = writeFile(path2, fb.buffer)
 	if !ok {
@@ -597,7 +597,7 @@ func TestWriteFileEnsureFinalNewlineCRLF(t *testing.T) {
 	fb.buffer.LineArray.Endings = buffer.FFDos
 	path := filepath.Join(t.TempDir(), "out.txt")
 
-	settings.EnsureFinalNewline = true
+	fb.buffer.Settings["eofnewline"] = true
 	ok, message := writeFile(path, fb.buffer)
 	if !ok {
 		t.Fatalf("writeFile failed: %s", message)
