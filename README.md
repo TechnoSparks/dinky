@@ -14,7 +14,6 @@ Have you ever found yourself needing to quickly edit a file in the terminal but 
 
 Now you can edit that git commit or random config file in the terminal and then quickly get back to your desktop editor to do "real work". Dinky will even do a cheap cosplay impression of VSCode just to hammer on that sense of familiarity!
 
-
 ## Screenshots
 
 ![File menu screenshot](screenshot.png)
@@ -28,7 +27,6 @@ Yes! We can have nice things in a terminal application. 💎
 ![Settings dialog screenshot](screenshot3.png)
 
 Settings but without having to hack some obscure config file. Folks, we're living in the future!
-
 
 ## Features
 
@@ -54,7 +52,6 @@ Settings but without having to hack some obscure config file. Folks, we're livin
 - **Sort & reverse lines**: Order those lines too
 - **URL encode/decode, upper/lower case, format JSON**: Sometimes you just have to
 
-
 ## Custom colour schemes
 
 Put colour scheme files ending in `.micro` in the `colorschemes` folder next to Dinky's `settings.json`:
@@ -63,7 +60,6 @@ Put colour scheme files ending in `.micro` in the `colorschemes` folder next to 
 - macOS: `~/Library/Application Support/dinky/colorschemes/`
 
 They use the same format as [micro's colour schemes](https://github.com/micro-editor/micro/blob/master/runtime/help/colors.md), so you can copy a micro colour scheme straight in. `include` lines are not supported. A file with the same name as a built-in scheme replaces it. New files show up the next time you open Settings. Lines that aren't valid are skipped, and the first problem is shown in the status bar when the scheme is applied. A file that exists but can't be read is reported the same way, and Dinky uses the built-in scheme of that name, or monokai if there is none.
-
 
 ## Installation
 
@@ -79,14 +75,14 @@ curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh 
 curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | sh -s -- 10
 ```
 
-The script installs into the current directory by default (like micro). Use `--install-dir` to
+The script installs into the current directory by default. Use `--install-dir` to
 choose another location; it will use `sudo` when the directory is not writable.
 
 Run `sh install.sh --help` for all options, including `--run-id`, `--repo`, `--dry-run`,
 `-y/--yes`, and the `DINKY_PLATFORM` override (e.g. `DINKY_PLATFORM=linux-amd64`) for
 forcing a download on an unsupported/undetected platform.
 
-or build from source:
+### or build from source
 
 ```bash
 git clone https://github.com/sedwards2009/dinky
@@ -130,6 +126,7 @@ Very much in development, So much development. I'll try to do regular releases a
 ## Technical Details
 
 Dinky is built in Go and uses:
+
 - **[smidgen](https://github.com/sedwards2009/smidgen)**: The editor component (based on micro's editing engine)
 - **[tview](https://github.com/rivo/tview/)**: Terminal UI framework
 - **[tcell](https://github.com/gdamore/tcell)**: Cross-platform terminal handling
@@ -148,4 +145,4 @@ Contributions are welcome! Please feel free to submit issues, feature requests, 
 
 ---
 
-*Dinky: Because sometimes you just want to edit a file without having to join a cult.*
+_Dinky: Because sometimes you just want to edit a file without having to join a cult._
