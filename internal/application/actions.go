@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"dinky/internal/application/filtercommandaction"
 	"dinky/internal/application/settingstype"
 	"dinky/internal/gpm"
@@ -8,6 +9,7 @@ import (
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
+	"dinky/internal/updater"
 	"dinky/internal/utility"
 	"encoding/json"
 	"log"
@@ -18,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/renameio/v2"
@@ -53,6 +56,7 @@ const (
 	ACTION_FIND_NEXT                  = "FindNext"
 	ACTION_FIND_PREVIOUS              = "FindPrevious"
 	ACTION_ABOUT                      = "About"
+	ACTION_CHECK_UPDATES              = "CheckForUpdates"
 	ACTION_NEXT_EDITOR                = "NextEditor"
 	ACTION_PREVIOUS_EDITOR            = "PreviousEditor"
 	ACTION_CONVERT_TAB_SPACES         = "ConvertTabSpaces"
@@ -100,6 +104,7 @@ func init() {
 		ACTION_GO_TO_LINE:                 handleGoToLine,
 		ACTION_QUIT:                       handleQuit,
 		ACTION_ABOUT:                      handleAbout,
+		ACTION_CHECK_UPDATES:              handleCheckForUpdates,
 		ACTION_FIND:                       handleFind,
 		ACTION_FIND_NEXT:                  handleFindNext,
 		ACTION_FIND_PREVIOUS:              handleFindPrevious,
@@ -419,6 +424,93 @@ func handleAbout() tview.Primitive {
 		"(c) 2025-2026 Simon Edwards\n"+
 		"(c) 2026 Shahmi Saidi (TechnoSparks)",
 		nil)
+}
+
+func hasUnsavedChanges() bool {
+	for _, fb := range fileBuffers {
+		if fb.buffer.Modified() {
+			return true
+		}
+	}
+	return false
+}
+
+func handleCheckForUpdates() tview.Primitive {
+	if hasUnsavedChanges() {
+		return ShowOkDialog("Check for Updates",
+			"Save or close modified files before updating.", nil)
+	}
+
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+		defer cancel()
+
+		rel, err := updater.LatestRelease(ctx)
+		app.QueueUpdateDraw(func() {
+			if err != nil {
+				ShowOkDialog("Check for Updates",
+					"Could not check for updates:\n"+err.Error(), nil)
+				return
+			}
+
+			if !updater.IsNewer(getDinkyVersion(), rel.TagName) {
+				ShowOkDialog("Check for Updates",
+					"You are up to date.\n\nCurrent: "+getDinkyVersion()+
+						"\nLatest:  "+rel.TagName, nil)
+				return
+			}
+
+			cmd := updateCommand()
+
+			msg := "A new version is available.\n\n" +
+				"Current: " + getDinkyVersion() + "\n" +
+				"Latest:  " + rel.TagName + "\n\n" +
+				"Update automatically, or copy the command to run manually."
+
+			ShowMessageDialog("Check for Updates", msg, []string{"Update now", "Copy command", "Cancel"},
+				func() { CloseMessageDialog() },
+				func(button string, index int) {
+					CloseMessageDialog()
+					switch index {
+					case 0:
+						performUpdate()
+					case 1:
+						_ = clipboard.ClipboardWriteAll(cmd)
+						ShowOkDialog("Update command",
+							"Command copied to clipboard. Run it in a terminal.", nil)
+					}
+				})
+		})
+	}()
+
+	return nil
+}
+
+func updateCommand() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	exe, _ = filepath.Abs(exe)
+	exe, _ = filepath.EvalSymlinks(exe)
+	installDir := filepath.Dir(exe)
+
+	return "curl -fsSL https://raw.githubusercontent.com/TechnoSparks/dinky/main/install.sh | " +
+		"sh -s -- --install-dir " + shellQuote(installDir) + " -y"
+}
+
+func performUpdate() {
+	cmd := updateCommand()
+	if cmd == "" {
+		ShowOkDialog("Update", "Could not locate current binary.", nil)
+		return
+	}
+	pendingInstallerCommand = cmd
+	app.Stop()
+}
+
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "'\\''") + "'"
 }
 
 func handleSetTabSize() tview.Primitive {

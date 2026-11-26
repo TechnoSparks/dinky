@@ -16,7 +16,7 @@ replace github.com/sedwards2009/smidgen => ../smidgen
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect

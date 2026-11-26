@@ -90,6 +90,8 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_SET_SYNTAX_HIGHLIGHTING, Title: "Syntax…", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]H[::U]elp", Shortcut: 'h', Items: []*menu.MenuItem{
+			{ID: ACTION_CHECK_UPDATES, Title: "Check for Updates…", Callback: handleDinkyAction},
+			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_ABOUT, Title: "About", Callback: handleDinkyAction},
 		}},
 	}
