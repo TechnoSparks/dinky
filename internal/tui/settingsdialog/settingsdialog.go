@@ -13,9 +13,13 @@ import (
 	"github.com/sedwards2009/smidgen"
 )
 
+const editorTabID = "editor"
+const themeTabID = "theme"
+
 type SettingsDialog struct {
 	*tview.Flex
 	verticalContentsFlex *tview.Flex
+	tabHeader            *tview.TextView
 	closeFunc            func()
 	okFunc               func(settings settingstype.Settings)
 	OkButton             *tview.Button
@@ -209,8 +213,8 @@ func main() {
 		title string
 		page  tview.Primitive
 	}{
-		{id: "editor", title: "Editor", page: editorPage},
-		{id: "theme", title: "Theme", page: themePage},
+		{id: editorTabID, title: "Editor", page: editorPage},
+		{id: themeTabID, title: "Theme", page: themePage},
 	}
 
 	pages := tview.NewPages()
@@ -265,6 +269,7 @@ func main() {
 	sd := &SettingsDialog{
 		Flex:                           topLayout,
 		verticalContentsFlex:           verticalContentsFlex,
+		tabHeader:                      tabHeader,
 		OkButton:                       okButton,
 		CancelButton:                   cancelButton,
 		ShowLineNumbersCheckbox:        showLineNumbersCheckbox,
@@ -336,6 +341,9 @@ func (sd *SettingsDialog) SetCloseFunc(closeFunc func()) {
 }
 
 func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
+	// The dialog is reused, so always reopen on the first tab.
+	sd.tabHeader.Highlight(editorTabID)
+
 	for rowIndex, item := range sd.colorFiles {
 		if item == settings.ColorScheme {
 			sd.ColorSchemeTableField.Select(rowIndex, 0)
