@@ -6,7 +6,7 @@
 
 Dinky is a terminal-based text editor designed for people who want to quickly edit text without having to learn the arcane ways of vi, emacs, or other traditional terminal editors. It wraps the excellent editor component from [micro](https://github.com/zyedidia/micro) with a familiar GUI-style interface complete with menus, dialogs, and intuitive navigation.
 
-**GitHub Repository:** https://github.com/sedwards2009/dinky
+**GitHub Repository:** https://github.com/TechnoSparks/dinky
 
 ## Why Dinky?
 
@@ -63,7 +63,7 @@ They use the same format as [micro's colour schemes](https://github.com/micro-ed
 
 ## Installation
 
-Download a release binary from the [releases page](https://github.com/sedwards2009/dinky/releases).
+Download a release binary from the [releases page](https://github.com/TechnoSparks/dinky/releases).
 
 Or install with a one-liner (latest release, or a specific PR's build):
 
@@ -85,7 +85,7 @@ forcing a download on an unsupported/undetected platform.
 ### or build from source
 
 ```bash
-git clone https://github.com/sedwards2009/dinky
+git clone https://github.com/TechnoSparks/dinky
 cd dinky
 go build dinky.go
 ```
@@ -141,7 +141,7 @@ Created by **Simon Edwards** - [@sedwards2009](https://github.com/sedwards2009)
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on the [GitHub repository](https://github.com/sedwards2009/dinky).
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on the [GitHub repository](https://github.com/TechnoSparks/dinky).
 
 ---
 
