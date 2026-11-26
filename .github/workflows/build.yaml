@@ -42,7 +42,7 @@ jobs:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-        run: go build -buildvcs=true -o "dinky-$GOOS-$GOARCH" .
+        run: go build -buildvcs=true -ldflags "-X dinky/internal/application.version=$(git describe --tags --always --dirty 2>/dev/null || echo dev)" -o "dinky-$GOOS-$GOARCH" .
       - uses: actions/upload-artifact@v4
         with:
           name: dinky-${{ matrix.goos }}-${{ matrix.goarch }}

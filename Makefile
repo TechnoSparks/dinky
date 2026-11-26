@@ -1,7 +1,7 @@
 .PHONY: all build test filedialogdemo scrollbardemo filelistdemo smidgeninputfielddemo
 
 build:
-	go build -buildvcs=true -v dinky.go
+	go build -buildvcs=true -ldflags "-X dinky/internal/application.version=$$(git describe --tags --always --dirty 2>/dev/null || echo dev)" -v .
 
 test:
 	go test -v ./...
