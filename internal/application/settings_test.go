@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"dinky/internal/application/settingstype"
 
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/clipboard"
 )
@@ -217,5 +220,28 @@ func TestUserSettingsPathUsesConfigDir(t *testing.T) {
 	want := filepath.Join(configDir, "dinky", "settings.json")
 	if got := userSettingsPath(); got != want {
 		t.Errorf("userSettingsPath() = %q, want %q", got, want)
+	}
+}
+
+func TestSettingsOKAppliesClipboardMode(t *testing.T) {
+	newTestHarness(t)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HOME", t.TempDir())
+	previousMode := clipboard.Mode()
+	t.Cleanup(func() {
+		clipboard.SetMode(previousMode)
+	})
+	clipboard.SetMode(clipboard.ModeTerminal)
+
+	handleSettings()
+	internalIndex := slices.Index(settingstype.ClipboardModes, clipboard.ModeInternal)
+	settingsDialog.ClipboardList.SetCurrentItem(internalIndex)
+	settingsDialog.OkButton.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone), func(p tview.Primitive) {})
+
+	if got := clipboard.Mode(); got != clipboard.ModeInternal {
+		t.Errorf("clipboard mode after OK = %q, want %q", got, clipboard.ModeInternal)
+	}
+	if settings.Clipboard != clipboard.ModeInternal {
+		t.Errorf("settings.Clipboard = %q, want %q", settings.Clipboard, clipboard.ModeInternal)
 	}
 }
