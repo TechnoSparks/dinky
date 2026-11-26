@@ -575,6 +575,7 @@ func Main() {
 
 	settings = LoadUserSettings()
 	clipboard.SetMode(settings.Clipboard)
+	clipboard.SetCopyOnSelect(settings.CopyOnSelect)
 
 	initKeyBindings()
 

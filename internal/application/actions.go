@@ -731,6 +731,7 @@ func handleSettings() tview.Primitive {
 			SaveSettings(settings)
 			loadEditorColorScheme(settings.ColorScheme)
 			clipboard.SetMode(settings.Clipboard)
+			clipboard.SetCopyOnSelect(settings.CopyOnSelect)
 		})
 	}
 	settingsDialog.SetSettings(settings)
