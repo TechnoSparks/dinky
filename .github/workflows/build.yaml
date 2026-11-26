@@ -1,0 +1,50 @@
+name: Build
+
+# Builds dinky for each PR and uploads the binaries as downloadable artifacts.
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout smidgen
+        # Use the smidgen branch with the same name as this dinky branch if it exists, else main.
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          repo=https://github.com/TechnoSparks/smidgen.git
+          if git ls-remote --exit-code "$repo" "refs/heads/$BRANCH" >/dev/null; then
+            echo "Using smidgen branch $BRANCH"
+            git clone --branch "$BRANCH" "$repo" ../smidgen
+          else
+            echo "Using smidgen main"
+            git clone "$repo" ../smidgen
+          fi
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build -buildvcs=true -o "dinky-$GOOS-$GOARCH" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dinky-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dinky-${{ matrix.goos }}-${{ matrix.goarch }}
+          retention-days: 14
