@@ -415,7 +415,7 @@ func handleAbout() tview.Primitive {
 		"\n"+
 		"Version: "+getDinkyVersion()+"\n"+
 		"Version time: "+getDinkyVersionTime()+"\n"+
-		"Website: https://github.com/sedwards2009/dinky\n"+
+		"Website: https://github.com/TechnoSparks/dinky\n"+
 		"(c) 2025-2026 Simon Edwards\n"+
 		"(c) 2026 Shahmi Saidi (TechnoSparks)",
 		nil)
