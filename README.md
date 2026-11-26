@@ -143,8 +143,6 @@ Dinky is released under the [MIT License](LICENSE).
 
 Created by **Simon Edwards** - [@sedwards2009](https://github.com/sedwards2009)
 
-Maintained by **Shahmi Saidi (TechnoSparks)** - [@TechnoSparks](https://github.com/TechnoSparks)
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on the [GitHub repository](https://github.com/TechnoSparks/dinky).
