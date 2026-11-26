@@ -49,9 +49,20 @@ Settings but without having to hack some obscure config file. Folks, we're livin
 - **Soft wrap**: Wrap long lines to window width
 - **Show whitespace**: You need this for Makefiles, sorry
 - **Syntax highlighting**: Support for multiple programming languages, looks pretty ✨
+- **Colour schemes**: Pick one in Settings → Theme, or add your own (see [Custom colour schemes](#custom-colour-schemes))
 - **Vertical Ruler**: Keep those long lines under control
 - **Sort & reverse lines**: Order those lines too
 - **URL encode/decode, upper/lower case, format JSON**: Sometimes you just have to
+
+
+## Custom colour schemes
+
+Put colour scheme files ending in `.micro` in the `colorschemes` folder next to Dinky's `settings.json`:
+
+- Linux: `~/.config/dinky/colorschemes/`
+- macOS: `~/Library/Application Support/dinky/colorschemes/`
+
+They use the same format as [micro's colour schemes](https://github.com/micro-editor/micro/blob/master/runtime/help/colors.md), so you can copy a micro colour scheme straight in. `include` lines are not supported. A file with the same name as a built-in scheme replaces it. New files show up the next time you open Settings. Lines that aren't valid are skipped, and the first problem is shown in the status bar when the scheme is applied. A file that exists but can't be read is reported the same way, and Dinky uses the built-in scheme of that name, or monokai if there is none.
 
 
 ## Installation

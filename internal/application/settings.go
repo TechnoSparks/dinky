@@ -28,6 +28,15 @@ func userSettingsDirPath() string {
 	return filepath.Join(userConfigDir, "dinky")
 }
 
+// userColorschemesDirPath returns the directory for user colorschemes, or "" if there is no config directory.
+func userColorschemesDirPath() string {
+	userSettingsDir := userSettingsDirPath()
+	if userSettingsDir == "" {
+		return ""
+	}
+	return filepath.Join(userSettingsDir, "colorschemes")
+}
+
 // Load the settings JSON from the settings path file and return them.
 func loadSettings(settingsPath string) settingstype.Settings {
 	// Read the settings file

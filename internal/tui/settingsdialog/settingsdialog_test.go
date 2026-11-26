@@ -1,6 +1,8 @@
 package settingsdialog_test
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/clipboard"
 )
 
@@ -221,5 +224,41 @@ func TestSettingsDialogCopyOnSelectRoundTrip(t *testing.T) {
 		if got.CopyOnSelect != copyOnSelect {
 			t.Errorf("OK returned CopyOnSelect = %v, want %v", got.CopyOnSelect, copyOnSelect)
 		}
+	}
+}
+
+func TestSettingsDialogListsUserColorschemes(t *testing.T) {
+	sd, screen := newTestDialog(t)
+
+	// Added while the dialog exists, so SetSettings must reread the list.
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "my-theme.micro"), []byte(`color-link default "#112233,#445566"`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	smidgen.SetUserColorschemeDir(dir)
+	t.Cleanup(func() {
+		smidgen.SetUserColorschemeDir("")
+	})
+
+	settings := settingstype.DefaultSettings()
+	settings.ColorScheme = "my-theme"
+	sd.SetSettings(settings)
+	draw(sd, screen)
+	clickText(t, sd, screen, "Theme")
+	if !screenContains(screen, "my-theme") {
+		t.Error("user colorscheme \"my-theme\" missing from the Theme list")
+	}
+	x, y := findText(screen, "package main")
+	if _, bg, _ := cellStyle(screen, x, y).Decompose(); bg != tcell.GetColor("#445566") {
+		t.Errorf("preview background = %v, want the user colorscheme's #445566", bg)
+	}
+
+	var got settingstype.Settings
+	sd.SetOkFunc(func(newSettings settingstype.Settings) {
+		got = newSettings
+	})
+	sd.OkButton.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone), func(p tview.Primitive) {})
+	if got.ColorScheme != "my-theme" {
+		t.Errorf("OK returned ColorScheme = %q, want %q", got.ColorScheme, "my-theme")
 	}
 }
