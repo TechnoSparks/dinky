@@ -608,6 +608,81 @@ func TestWriteFileEnsureFinalNewlineCRLF(t *testing.T) {
 	}
 }
 
+func TestWriteFileEnsureFinalNewlineKeepsCursor(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello\nworld", "")
+	fb.buffer.Settings["eofnewline"] = true
+	cursor := fb.editor.Cursor()
+	cursor.Loc = buffer.Loc{X: 5, Y: 1}
+
+	ok, message := writeFile(filepath.Join(t.TempDir(), "out.txt"), fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	want := buffer.Loc{X: 5, Y: 1}
+	if cursor.Loc != want {
+		t.Errorf("cursor after save = %+v, want %+v", cursor.Loc, want)
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineOnlyOnce(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("hello", "")
+	fb.buffer.Settings["eofnewline"] = true
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	for i := 0; i < 2; i++ {
+		ok, message := writeFile(path, fb.buffer)
+		if !ok {
+			t.Fatalf("writeFile %d failed: %s", i+1, message)
+		}
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\n" {
+		t.Errorf("file after two saves = %q, want %q", data, "hello\\n")
+	}
+	if got := h.text(); got != "hello\n" {
+		t.Errorf("buffer after two saves = %q, want %q", got, "hello\\n")
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineEmptyBuffer(t *testing.T) {
+	h := newTestHarness(t)
+	fb := h.open("", "")
+	fb.buffer.Settings["eofnewline"] = true
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if len(data) != 0 {
+		t.Errorf("file = %q, want empty", data)
+	}
+	if got := h.text(); got != "" {
+		t.Errorf("buffer = %q, want empty", got)
+	}
+}
+
+func TestWriteFileEnsureFinalNewlineUsesBufferSetting(t *testing.T) {
+	h := newTestHarness(t)
+	settings.EnsureFinalNewline = true
+	fb := h.open("hello", "")
+	// Changing the default after opening must not affect this buffer.
+	settings.EnsureFinalNewline = false
+	path := filepath.Join(t.TempDir(), "out.txt")
+
+	ok, message := writeFile(path, fb.buffer)
+	if !ok {
+		t.Fatalf("writeFile failed: %s", message)
+	}
+	data, _ := os.ReadFile(path)
+	if string(data) != "hello\n" {
+		t.Errorf("file = %q, want %q", data, "hello\\n")
+	}
+}
+
 func TestWriteFileFailure(t *testing.T) {
 	h := newTestHarness(t)
 	fb := h.open("hello", "")
