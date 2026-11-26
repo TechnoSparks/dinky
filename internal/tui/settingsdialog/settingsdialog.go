@@ -5,6 +5,7 @@ import (
 	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/smidgeninputfield"
 	"dinky/internal/tui/table2"
+	"fmt"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -54,9 +55,12 @@ func NewSettingsDialog(app *tview.Application) *SettingsDialog {
 	verticalContentsFlex.SetDirection(tview.FlexRow)
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
 
+	themePage := tview.NewFlex()
+	themePage.SetDirection(tview.FlexRow)
+
 	colorSchemeLabel := tview.NewTextView()
 	colorSchemeLabel.SetText("Color Scheme:")
-	verticalContentsFlex.AddItem(colorSchemeLabel, 1, 0, false)
+	themePage.AddItem(colorSchemeLabel, 1, 0, false)
 
 	colorSchemeTableFlex := tview.NewFlex()
 	colorSchemeTableFlex.SetDirection(tview.FlexColumn)
@@ -86,15 +90,16 @@ func main() {
 
 	colorSchemeTableFlex.AddItem(colorSchemePreviewEditor, 0, 1, false)
 
-	verticalContentsFlex.AddItem(colorSchemeTableFlex, 0, 1, false)
+	themePage.AddItem(colorSchemeTableFlex, 0, 1, false)
 
-	verticalContentsFlex.AddItem(nil, 1, 0, false)
+	editorPage := tview.NewFlex()
+	editorPage.SetDirection(tview.FlexRow)
 
 	defaultsLabel := tview.NewTextView()
 	defaultsLabel.SetText("Defaults")
-	verticalContentsFlex.AddItem(defaultsLabel, 1, 0, false)
+	editorPage.AddItem(defaultsLabel, 1, 0, false)
 
-	verticalContentsFlex.AddItem(nil, 1, 0, false)
+	editorPage.AddItem(nil, 1, 0, false)
 
 	optionsColumnFlex := tview.NewFlex()
 	optionsColumnFlex.SetDirection(tview.FlexColumn)
@@ -196,7 +201,41 @@ func main() {
 	optionsColumnFlex.AddItem(forthColumnFlex, 12, 0, false)
 	optionsColumnFlex.AddItem(fifthColumnFlex, 0, 1, false)
 
-	verticalContentsFlex.AddItem(optionsColumnFlex, 6, 0, false)
+	editorPage.AddItem(optionsColumnFlex, 6, 0, false)
+
+	// Tabs: a header of clickable regions that switches between pages.
+	settingsTabs := []struct {
+		id    string
+		title string
+		page  tview.Primitive
+	}{
+		{id: "editor", title: "Editor", page: editorPage},
+		{id: "theme", title: "Theme", page: themePage},
+	}
+
+	pages := tview.NewPages()
+	tabHeaderText := ""
+	for i, tab := range settingsTabs {
+		tabHeaderText += fmt.Sprintf(`["%s"] %s [""] `, tab.id, tab.title)
+		pages.AddPage(tab.id, tab.page, true, i == 0)
+	}
+
+	tabHeader := tview.NewTextView()
+	tabHeader.SetRegions(true)
+	tabHeader.SetText(tabHeaderText)
+	tabHeader.SetHighlightedFunc(func(added, removed, remaining []string) {
+		if len(added) == 0 {
+			// Clicking outside a tab clears the highlight. Keep the current tab selected.
+			tabHeader.Highlight(removed...)
+			return
+		}
+		pages.SwitchToPage(added[0])
+	})
+	tabHeader.Highlight(settingsTabs[0].id)
+
+	verticalContentsFlex.AddItem(tabHeader, 1, 0, false)
+	verticalContentsFlex.AddItem(nil, 1, 0, false)
+	verticalContentsFlex.AddItem(pages, 0, 1, false)
 
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
