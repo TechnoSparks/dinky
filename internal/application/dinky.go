@@ -16,6 +16,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"syscall"
 
@@ -595,6 +596,26 @@ func parseCommandLine() bool {
 	return true
 }
 
+// findShell locates a usable shell, accounting for environments such as Termux
+// where /bin/sh does not exist.
+func findShell() string {
+	candidates := []string{}
+	if prefix := os.Getenv("PREFIX"); prefix != "" {
+		candidates = append(candidates, prefix+"/bin/sh")
+	}
+	candidates = append(candidates,
+		"/data/data/com.termux/files/usr/bin/sh",
+		"/system/bin/sh",
+		"/bin/sh",
+	)
+	for _, c := range candidates {
+		if info, err := os.Stat(c); err == nil && !info.IsDir() {
+			return c
+		}
+	}
+	return "/bin/sh"
+}
+
 func Main() {
 	// Capture the original arguments before parseCommandLine rewrites os.Args.
 	launchArgs = append([]string{}, os.Args[1:]...)
@@ -807,7 +828,8 @@ func Main() {
 
 	if pendingInstallerCommand != "" {
 		// Terminal state has already been restored by tview.
-		syscall.Exec("/bin/sh", []string{"sh", "-c", pendingInstallerCommand}, os.Environ())
+		shell := findShell()
+		syscall.Exec(shell, []string{filepath.Base(shell), "-c", pendingInstallerCommand}, os.Environ())
 	}
 
 	if gpmClient != nil {

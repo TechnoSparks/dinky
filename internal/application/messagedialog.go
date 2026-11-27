@@ -63,6 +63,21 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 	}
 	width += 4
 
+	width = dialog.ClampDialogWidth(width)
+
+	// Soft-wrap long lines so the message stays inside the dialog instead of
+	// overflowing the terminal.
+	wrapWidth := width - 4
+	if wrapWidth < 10 {
+		wrapWidth = 10
+	}
+	wrapped := dialog.WrapText(message, wrapWidth)
+	message = wrapped
+	// Recompute height from the wrapped text.
+	w, h := MeasureStringDimensions(wrapped)
+	_ = w
+	height = h + 6
+
 	if messageDialog == nil {
 		messageDialog = dialog.NewMessageDialog(app)
 	}

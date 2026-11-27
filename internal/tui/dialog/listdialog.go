@@ -159,7 +159,7 @@ func (d *ListDialog) Open(options ListDialogOptions) {
 
 	d.Buttons = CreateButtonsRow(d.buttonsFlex, options.Buttons, onButtonClick)
 	d.ResizeItem(d.innerFlex, options.Height, 0)
-	d.innerFlex.ResizeItem(d.verticalContentsFlex, clampDialogWidth(options.Width), 0)
+	d.innerFlex.ResizeItem(d.verticalContentsFlex, ClampDialogWidth(options.Width), 0)
 
 	for _, btn := range d.Buttons {
 		btn.SetInputCapture(d.inputFilter)
