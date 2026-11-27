@@ -201,14 +201,8 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 func (tabBar *TabBar) drawTab(screen tcell.Screen, i, x0, y, width int) {
 	tab := tabBar.tabs[i]
 
-	_, tabBarBg, _ := tabBar.BackgroundStyle.Decompose()
-	_, tabBg, _ := tabBar.ActiveTabStyle.Decompose()
-	_, tabInactiveBg, _ := tabBar.InactiveTabStyle.Decompose()
-
-	cornerStyle := tcell.Style{}.Foreground(tabInactiveBg).Background(tabBarBg)
 	textStyle := tabBar.InactiveTabStyle
 	if i == tabBar.active {
-		cornerStyle = tcell.Style{}.Foreground(tabBg).Background(tabBarBg)
 		textStyle = tabBar.ActiveTabStyle
 	}
 
@@ -227,7 +221,10 @@ func (tabBar *TabBar) drawTab(screen tcell.Screen, i, x0, y, width int) {
 		}
 	}
 
-	put('◢', cornerStyle)
+	// Flat tab edges: a single space with the tab's background color on each
+	// side. This avoids triangle glyphs whose cell width/alignment varies by
+	// terminal and font.
+	put(' ', textStyle)
 	for j := 0; j < tabNamePadding; j++ {
 		put(' ', textStyle)
 	}
@@ -236,7 +233,7 @@ func (tabBar *TabBar) drawTab(screen tcell.Screen, i, x0, y, width int) {
 	}
 	put(' ', textStyle)
 	put('✕', textStyle)
-	put('◣', cornerStyle)
+	put(' ', textStyle)
 }
 
 // ensurePlaced gives any not-yet-placed tab its settled render position so new

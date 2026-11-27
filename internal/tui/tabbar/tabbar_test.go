@@ -312,21 +312,15 @@ func TestDrawBasics(t *testing.T) {
 
 	// Active tab (index 0) starts at column 0: corner, padding, title, gap,
 	// close glyph, corner.
-	wantActive := map[int]rune{0: '◢', 1: ' ', 2: 'o', 3: 'n', 4: 'e', 5: ' ', 6: '✕', 7: '◣'}
+	wantActive := map[int]rune{0: ' ', 1: ' ', 2: 'o', 3: 'n', 4: 'e', 5: ' ', 6: '✕', 7: ' '}
 	for x, want := range wantActive {
 		assertCellRune(t, screen, x, 0, want)
-		if x == 0 || x == 7 {
-			// Corners use the tab background as foreground and the bar
-			// background as background.
-			assertCellStyle(t, screen, x, 0, stylecolor.Black, stylecolor.Blue, false)
-		} else {
-			assertCellStyle(t, screen, x, 0, stylecolor.White, stylecolor.Black, true)
-		}
+		assertCellStyle(t, screen, x, 0, stylecolor.White, stylecolor.Black, true)
 	}
 
 	// Inactive tab (index 1) starts at column 10.
-	assertCellRune(t, screen, 10, 0, '◢')
-	assertCellStyle(t, screen, 10, 0, stylecolor.InactiveGrey, stylecolor.Blue, false)
+	assertCellRune(t, screen, 10, 0, ' ')
+	assertCellStyle(t, screen, 10, 0, stylecolor.White, stylecolor.InactiveGrey, false)
 	assertCellRune(t, screen, 12, 0, 't')
 	assertCellStyle(t, screen, 12, 0, stylecolor.White, stylecolor.InactiveGrey, false)
 	assertCellRune(t, screen, 16, 0, '✕')
@@ -362,18 +356,18 @@ func TestDrawOverflowIndicators(t *testing.T) {
 	assertCellStyle(t, screen, 19, 0, stylecolor.White, stylecolor.Blue, true)
 
 	// The first two tabs are still visible at hscroll 0.
-	assertCellRune(t, screen, 0, 0, '◢')
+	assertCellRune(t, screen, 0, 0, ' ')
 	assertCellRune(t, screen, 2, 0, 'a')
-	assertCellRune(t, screen, 10, 0, '◢')
+	assertCellRune(t, screen, 10, 0, ' ')
 	assertCellRune(t, screen, 12, 0, 'b')
 
 	// Scrolling by the maximum amount reveals the last tabs while keeping the
 	// overflow indicators on top.
 	tb.hscroll = 30
 	tb.Draw(screen)
-	assertCellRune(t, screen, 0, 0, '◢')
+	assertCellRune(t, screen, 0, 0, ' ')
 	assertCellRune(t, screen, 2, 0, 'd')
-	assertCellRune(t, screen, 10, 0, '◢')
+	assertCellRune(t, screen, 10, 0, ' ')
 	assertCellRune(t, screen, 12, 0, 'e')
 	assertCellRune(t, screen, 18, 0, '⯇')
 	assertCellRune(t, screen, 19, 0, '⯈')
@@ -392,8 +386,8 @@ func TestDrawScrolledActiveTab(t *testing.T) {
 	tb.Draw(screen)
 
 	// hscroll is 12, so the active fourth tab (layout x 30) starts at 18.
-	assertCellRune(t, screen, 18, 0, '◢')
-	assertCellStyle(t, screen, 18, 0, stylecolor.Black, stylecolor.Blue, false)
+	assertCellRune(t, screen, 18, 0, ' ')
+	assertCellStyle(t, screen, 18, 0, stylecolor.White, stylecolor.Black, true)
 	assertCellRune(t, screen, 20, 0, 'd')
 	assertCellStyle(t, screen, 20, 0, stylecolor.White, stylecolor.Black, true)
 	assertCellRune(t, screen, 24, 0, '✕')
@@ -417,8 +411,8 @@ func TestDrawActiveTabOnTop(t *testing.T) {
 
 	assertCellRune(t, screen, 2, 0, 'b')
 	assertCellStyle(t, screen, 2, 0, stylecolor.White, stylecolor.Black, true)
-	assertCellRune(t, screen, 0, 0, '◢')
-	assertCellStyle(t, screen, 0, 0, stylecolor.Black, stylecolor.Blue, false)
+	assertCellRune(t, screen, 0, 0, ' ')
+	assertCellStyle(t, screen, 0, 0, stylecolor.White, stylecolor.Black, true)
 }
 
 func TestMouseClickActivatesTab(t *testing.T) {
