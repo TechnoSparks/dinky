@@ -1,6 +1,8 @@
 package dialog
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -8,9 +10,9 @@ import (
 // ScreenWidth is the current terminal width. The application updates it on every draw.
 var ScreenWidth int
 
-// clampDialogWidth keeps dialogs from exceeding the preferred maximum (75 columns,
+// ClampDialogWidth keeps dialogs from exceeding the preferred maximum (75 columns,
 // matching the Settings dialog) while still fitting on small terminals.
-func clampDialogWidth(width int) int {
+func ClampDialogWidth(width int) int {
 	const preferredMax = 75
 	max := preferredMax
 	if ScreenWidth > 0 && ScreenWidth-4 < max {
@@ -87,7 +89,7 @@ func NewMessageDialog(app *tview.Application) *MessageDialog {
 // The buttons parameter is a slice of strings representing the button labels.
 // The first button will be focused by default.
 func (d *MessageDialog) Open(title string, message string, buttons []string, width int, height int) {
-	width = clampDialogWidth(width)
+	width = ClampDialogWidth(width)
 
 	d.verticalContentsFlex.SetTitle(title)
 	d.messageView.SetText(message)
@@ -134,6 +136,62 @@ func (d *MessageDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 	default:
 	}
 	return event
+}
+
+// WrapText soft-wraps text to the given width, preserving explicit newlines.
+func WrapText(text string, width int) string {
+	if width < 1 {
+		width = 1
+	}
+	lines := strings.Split(text, "\n")
+	var out []string
+	for _, line := range lines {
+		out = append(out, wrapLine(line, width)...)
+	}
+	return strings.Join(out, "\n")
+}
+
+func wrapLine(line string, width int) []string {
+	words := strings.Fields(line)
+	if len(words) == 0 {
+		return []string{""}
+	}
+	var result []string
+	current := ""
+	for _, w := range words {
+		if len([]rune(w)) > width {
+			// flush current
+			if current != "" {
+				result = append(result, current)
+				current = ""
+			}
+			// hard-break long word
+			runes := []rune(w)
+			for len(runes) > width {
+				result = append(result, string(runes[:width]))
+				runes = runes[width:]
+			}
+			if len(runes) > 0 {
+				current = string(runes)
+			}
+			continue
+		}
+		if current == "" {
+			current = w
+		} else if len([]rune(current))+1+len([]rune(w)) <= width {
+			current += " " + w
+		} else {
+			result = append(result, current)
+			current = w
+		}
+	}
+	if current != "" {
+		result = append(result, current)
+	}
+	if len(result) == 0 {
+		result = []string{""}
+	}
+	return result
 }
 
 // Focus is called when this primitive receives focus.
