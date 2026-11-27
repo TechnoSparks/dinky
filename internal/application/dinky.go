@@ -600,16 +600,13 @@ func parseCommandLine() bool {
 // where /bin/sh does not exist.
 func findShell() string {
 	candidates := []string{}
-	if v := os.Getenv("SHELL"); v != "" {
-		candidates = append(candidates, v)
-	}
 	if prefix := os.Getenv("PREFIX"); prefix != "" {
 		candidates = append(candidates, prefix+"/bin/sh")
 	}
 	candidates = append(candidates,
-		"/bin/sh",
-		"/system/bin/sh",
 		"/data/data/com.termux/files/usr/bin/sh",
+		"/system/bin/sh",
+		"/bin/sh",
 	)
 	for _, c := range candidates {
 		if info, err := os.Stat(c); err == nil && !info.IsDir() {
